@@ -4,7 +4,7 @@
 ### Header File
 ```#include "ecGPIO.h"```
 
-```// MODER
+```c// MODER
 #define INPUT  		0x00
 #define OUTPUT 		0x01
 #define AF     		0x02
