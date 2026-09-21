@@ -1,10 +1,10 @@
 # EC-STM32F4-22200264 
 
-"## GPIO_Digital_InOut"
-"### Header File"
+## GPIO_Digital_InOut
+### Header File
 ```#include "ecGPIO.h"```
 
-// MODER
+```// MODER
 #define INPUT  		0x00
 #define OUTPUT 		0x01
 #define AF     		0x02
@@ -41,3 +41,4 @@ int  GPIO_read(GPIO_TypeDef *Port, int pin);
 void GPIO_ospeed(GPIO_TypeDef* Port, int pin, int speed);
 void GPIO_otype(GPIO_TypeDef* Port, int pin, int type);
 void GPIO_pupdr(GPIO_TypeDef* Port, int pin, int pupd);
+```
