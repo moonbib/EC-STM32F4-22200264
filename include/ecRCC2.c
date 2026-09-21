@@ -14,12 +14,12 @@ volatile int EC_SYSCLK=16000000;
 
 void RCC_HSI_init() {
 // Enable High Speed Internal Clock (HSI = 16 MHz)
-  //RCC->CR |= ((uint32_t)RCC_CR_HSION);
-	RCC->CR |= 0x00000001U;
+  	RCC->CR |= ((uint32_t)RCC_CR_HSION);
+	//RCC->CR |= 0x00000001U;
 	
   // wait until HSI is ready
-  //while ( (RCC->CR & (uint32_t) RCC_CR_HSIRDY) == 0 ) {;}
-	while ( (RCC->CR & 0x00000002U) == 0 ) {;}
+  	while ( (RCC->CR & (uint32_t) RCC_CR_HSIRDY) == 0 ) {;}
+	//while ( (RCC->CR & 0x00000002U) == 0 ) {;}	//while 무한문, 1이 아니면 넘어가지 못함
 	
   // Select HSI as system clock source 
   	RCC->CFGR &= (uint32_t)(~RCC_CFGR_SW); 								// not essential
@@ -27,6 +27,7 @@ void RCC_HSI_init() {
 
 	// Wait till HSI is used as system clock source
   	while ((RCC->CFGR & (uint32_t)RCC_CFGR_SWS) != 0 ) {;}  
+	//while ((RCC->CFRG ... ))
 
 	EC_SYSCLK=16000000;	
 }
@@ -79,10 +80,17 @@ void RCC_PLL_init() {
 	EC_SYSCLK=84000000;
 }
 
+
+	// Exercise!!
+void RCC_HSE_init(){	
+
+}
+
+
 void delay_ms_HSI(uint32_t ms) {
 	//uint32_t EC_SYSCLK=16000000;
 	volatile uint32_t cnt = ((uint32_t)EC_SYSCLK / (1000UL * 6)) * ms;
-	while (cnt > 0) cnt--;
+	while (cnt > 0) cnt--;		//delay를 주는데, 내가 원하는 시간까지 돌린다!, 나중에 개선방안을 주신데 
 }
 
 void RCC_GPIOA_enable()

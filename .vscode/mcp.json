@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"EC": {
+			"type": "http",
+			"url": "https://ykkim.gitbook.io/ec/~gitbook/mcp"
+		}
+	},
+	"inputs": []
+}
