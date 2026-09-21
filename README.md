@@ -1,8 +1,8 @@
-"# EC-STM32F4-22200264" 
+# EC-STM32F4-22200264 
 
 "## GPIO_Digital_InOut"
 "### Header File"
-"```#include "ecGPIO.h"```"
+```#include "ecGPIO.h"```
 
 // MODER
 #define INPUT  		0x00
