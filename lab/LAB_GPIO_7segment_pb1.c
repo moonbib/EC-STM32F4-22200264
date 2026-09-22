@@ -13,7 +13,6 @@ void setup(void) {
   FND_init(pinFND);
   FND_select_init(selectFND);
   // Intialize  Others
-  // [YOUR CODE GOES HERE]
 };
 
 int main(void) {

@@ -161,6 +161,17 @@ void FND_select(uint8_t digit) {
   GPIO_write(_fndSel[digit], HIGH);
 }
 
+void FND_tensdigit(uint8_t select1, uint8_t select2, uint8_t num1, uint8_t num2) {
+	FND_select(select1);
+	FND_display(num1);
+	delay_ms_HSI(1);
+	FND_select(select2);
+	FND_display(num2);
+	delay_ms_HSI(1);
+}
+
+
+
 ////////////////////////////////////////////////////////////////////
 
 /*----------------------------------------------------------------
