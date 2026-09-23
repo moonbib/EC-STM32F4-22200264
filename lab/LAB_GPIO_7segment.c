@@ -1,3 +1,10 @@
+	/*----------------------------------------------------------------\
+	Author           : [ Jueon Moon ]
+	Modified         : 09-23-2026 
+	Description      : [ Displays “50” on a two-digit 7-segment FND ] 
+	/----------------------------------------------------------------*/
+
+
 #include "ecGPIO2.h"
 #include "ecRCC2.h"
 #include "stm32f4xx.h"
