@@ -1,12 +1,8 @@
 /*----------------------------------------------------------------\
-@ Embedded Controller by Young-Keun Kim - Handong Global University
 Author           : [ Jueon Moon ]
-Created          : 05-03-2021
-Modified         : 09-17-2026 [WRITE THE DATE!!!!]
-Language/ver     : C++ in VS Code
-
+Modified         : 09-17-2026
 Description      : [ this code aware photo, have difference output, high and low
-] !!!!!!
+] 
 /----------------------------------------------------------------*/
 
 #include "ecRCC2.h"

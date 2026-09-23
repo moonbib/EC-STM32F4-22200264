@@ -1,11 +1,7 @@
 	/*----------------------------------------------------------------\
-	@ Embedded Controller by Young-Keun Kim - Handong Global University
 	Author           : [ Jueon Moon ]
-	Created          : 05-03-2021
-	Modified         : 09-17-2026 [WRITE THE DATE!!!!]
-	Language/ver     : C++ in VS Code
-
-	Description      : [ this code aware photo, have difference output, high and low ] !!!!!!
+	Modified         : 09-23-2026 
+	Description      : [ press the button, get diffents LED Toggle ]
 	/----------------------------------------------------------------*/
 
 	#include "ecPinNames.h"
