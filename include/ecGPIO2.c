@@ -154,7 +154,6 @@ void FND_display(uint8_t num) {
 
 // Select display: FND0 to FND3
 void FND_select(uint8_t digit) {
-
   for (int i = 0; i < 4; i++) {
     GPIO_write(_fndSel[i], LOW);
   }
