@@ -31,8 +31,8 @@ Description      : GPIO Library. Distributed to Students for LAB_GPIO
 ---------------------------------------------------------------- */
 // ADD MORE  MACRO related to GPIO 
 // PU, PD, NO_PUPD, PUSH_PULL, LOW, MEDIUM, etc
-
-
+#define EC_PU 1
+#define EC_PD 0
 
 
 

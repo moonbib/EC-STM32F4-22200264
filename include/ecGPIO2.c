@@ -18,25 +18,17 @@ void GPIO_init(PinName_t pinName, uint32_t mode) {
   GPIO_TypeDef *Port;
   unsigned int pin;
   ecPinmap(pinName, &Port, &pin);
-
   // mode  : Input(0), Output(1), AlterFunc(2), Analog(3)
   if (Port == GPIOA)
     RCC_GPIOA_enable();
   if (Port == GPIOB)
     RCC_GPIOB_enable();
-
-  // Make it for GPIOC, GPIOD..GPIOH
   if (Port == GPIOC)
     RCC_GPIOC_enable();
-
   if (Port == GPIOD)
     RCC_GPIOD_enable();
-
   if (Port == GPIOE)
     RCC_GPIOE_enable();
-
-  // You can also make and use a more general function of
-  // void RCC_GPIO_enable(GPIO_TypeDef *Port);
   GPIO_mode(pinName, mode);
 }
 
@@ -45,7 +37,6 @@ void GPIO_mode(PinName_t pinName, uint32_t mode) {
   GPIO_TypeDef *Port;
   unsigned int pin;
   ecPinmap(pinName, &Port, &pin);
-
   Port->MODER &= ~(3UL << (2 * pin));
   Port->MODER |= mode << (2 * pin);
 }
@@ -77,7 +68,6 @@ void GPIO_pupd(PinName_t pinName, uint32_t pupd) {
   GPIO_TypeDef *Port;
   unsigned int pin;
   ecPinmap(pinName, &Port, &pin);
-
   Port->PUPDR &= ~(3UL << (2 * pin));
   Port->PUPDR |= pupd << (2 * pin);
 }
@@ -86,7 +76,6 @@ void GPIO_write(PinName_t pinName, uint32_t Output) {
   GPIO_TypeDef *Port;
   unsigned int pin;
   ecPinmap(pinName, &Port, &pin);
-
   Output == HIGH ? (Port->ODR |= (1UL << pin)) : (Port->ODR &= ~(1UL << pin));
 }
 
@@ -103,7 +92,6 @@ void GPIO_init_MD(PinName_t pinName, uint32_t mode, int pupd, int type,
   unsigned int pin;
   ecPinmap(pinName, &Port, &pin);
   // RCC_GPIO_enable(Port);
-
   GPIO_mode(pinName, mode);
   GPIO_pupd(pinName, pupd);
   GPIO_otype(pinName, type);
@@ -168,8 +156,6 @@ void FND_tensdigit(uint8_t select1, uint8_t select2, uint8_t num1, uint8_t num2)
 	FND_display(num2);
 	delay_ms_HSI(1);
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 

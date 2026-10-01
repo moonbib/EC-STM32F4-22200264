@@ -7,14 +7,10 @@ Language/ver     : C++ in VS Code
 
 Description      : SysTick Library. Distributed to Students for LAB_SYSTICK
 /----------------------------------------------------------------*/
-
-
 // #include "ecSysTick2.h"
 #include "ecSysTick2.h"
 
-
 volatile uint32_t msTicks;
-
 // Initialize 1 ms tick of SysTick timer. 
 // Must call AFTER RCC_HSI_init() (16 MHz) or RCC_PLL_init() (84 MHz)
 // Updates  EC_SYSCLK either 84 MHz or 16 MHz
@@ -28,16 +24,14 @@ void SysTick_init(void){
 	// 1 = processor clock;  0 = external clock
 	SysTick->CTRL |= SysTick_CTRL_CLKSOURCE_Msk;  // [YOUR CODE GOES HERE!!]
 
-
 	// Enables SysTick exception request
 	// 1 = counting down to zero --> SysTick exception request 
 	SysTick->CTRL |=  SysTick_CTRL_TICKINT_Msk;  // [YOUR CODE GOES HERE!!]
 
 	// SysTick Reload Value Register : (SYSCLK / 1000) - 1  ->  1 ms
     // EC_SYSCLK :  HSI 16 MHz or PLL 84 MHz
-	SysTick->LOAD =  (uint32_t)EC_SYSCLK*1UL/1000UL-1UL;  // [YOUR CODE GOES HERE!!]
+	SysTick->LOAD =  (uint32_t)EC_SYSCLK*1UL/1000UL-1UL; 
 
-        
 	// SysTick Current Value Register : Reset counter value to 0
 	SysTick->VAL = 0;
 	
@@ -48,7 +42,6 @@ void SysTick_init(void){
 	NVIC_SetPriority(SysTick_IRQn, 15);		// Set Priority to 1
 	NVIC_EnableIRQ(SysTick_IRQn);			// Enable interrupt in NVIC
 }
-
 
 // SysTick_Handler() is called every 1 ms by the SysTick IRQ
 void SysTick_Handler(void){
@@ -67,7 +60,6 @@ void delay_ms (uint32_t msec){
 	while ((msTicks - curTicks) < msec){;}		// unsigned math: safe across wrap-around
 }
 
-
 // Reset the SysTick counter to 0
 void SysTick_reset(void)
 {
@@ -78,6 +70,3 @@ void SysTick_reset(void)
 uint32_t SysTick_val(void) {
 	return SysTick->VAL;
 }
-
-
-

@@ -41,7 +41,7 @@
 		while(1){
 			// check if the pushbutton is pressed. Turn LED on/off accordingly:
 			buttonState = GPIO_read(BUTTON_PIN);				
-			if(preBS== 1 && buttonState == 0 ){
+			if(preBS== 1 && buttonState == 0){
 				led_state = (led_state + 1) % 4;
 				for(int i=0; i < 4; i++){
 					GPIO_write(LED_PINS[i],(i==led_state));
