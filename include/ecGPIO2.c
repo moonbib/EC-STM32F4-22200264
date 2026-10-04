@@ -15,82 +15,64 @@ Description      : GPIO Library. Distributed to Students for LAB_GPIO
                                 [EXERCISE]
 ---------------------------------------------------------------- */
 void GPIO_init(PinName_t pinName, uint32_t mode) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
+  Pinmap getP = getPinmap(pinName);
   // mode  : Input(0), Output(1), AlterFunc(2), Analog(3)
-  if (Port == GPIOA)
+  if (getP.Port == GPIOA)
     RCC_GPIOA_enable();
-  if (Port == GPIOB)
+  if (getP.Port == GPIOB)
     RCC_GPIOB_enable();
-  if (Port == GPIOC)
+  if (getP.Port == GPIOC)
     RCC_GPIOC_enable();
-  if (Port == GPIOD)
+  if (getP.Port == GPIOD)
     RCC_GPIOD_enable();
-  if (Port == GPIOE)
+  if (getP.Port == GPIOE)
     RCC_GPIOE_enable();
   GPIO_mode(pinName, mode);
 }
 
 // GPIO Mode          : Input(00), Output(01), AlterFunc(10), Analog(11)
 void GPIO_mode(PinName_t pinName, uint32_t mode) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
-  Port->MODER &= ~(3UL << (2 * pin));
-  Port->MODER |= mode << (2 * pin);
+  Pinmap getP = getPinmap(pinName);
+  getP.Port->MODER &= ~(3UL << (2 * getP.pin));
+  getP.Port->MODER |= mode << (2 * getP.pin);
 }
 
 // GPIO Speed          : Low speed (00), Medium speed (01), Fast speed (10),
 // High speed (11)
 void GPIO_ospeed(PinName_t pinName, uint32_t speed) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
-
-  Port->OSPEEDR &= ~(3UL << (2 * pin));
-  Port->OSPEEDR |= speed << (2 * pin);
+  Pinmap getP = getPinmap(pinName);
+  getP.Port->OSPEEDR &= ~(3UL << (2 * getP.pin));
+  getP.Port->OSPEEDR |= speed << (2 * getP.pin);
 }
 
 // GPIO Output Type: Output push-pull (0, reset), Output open drain (1)
 void GPIO_otype(PinName_t pinName, uint32_t type) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
-
-  Port->OTYPER &= ~(1UL << pin);
-  Port->OTYPER |= type << pin;
+  Pinmap getP = getPinmap(pinName);
+  getP.Port->OTYPER &= ~(1UL << getP.pin);
+  getP.Port->OTYPER |= type << getP.pin;
 }
 
 // GPIO Push-Pull    : No pull-up, pull-down (00), Pull-up (01), Pull-down (10),
 // Reserved (11)
 void GPIO_pupd(PinName_t pinName, uint32_t pupd) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
-  Port->PUPDR &= ~(3UL << (2 * pin));
-  Port->PUPDR |= pupd << (2 * pin);
+  Pinmap getP = getPinmap(pinName);
+  getP.Port->PUPDR &= ~(3UL << (2 * getP.pin));
+  getP.Port->PUPDR |= pupd << (2 * getP.pin);
 }
 
 void GPIO_write(PinName_t pinName, uint32_t Output) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
-  Output == HIGH ? (Port->ODR |= (1UL << pin)) : (Port->ODR &= ~(1UL << pin));
+  Pinmap getP = getPinmap(pinName);
+  Output == HIGH ? (getP.Port->ODR |= (1UL << getP.pin)) : (getP.Port->ODR &= ~(1UL << getP.pin));
 }
 
 uint32_t GPIO_read(PinName_t pinName) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
-  return ((Port->IDR) >> pin) & 1UL;
+  Pinmap getP = getPinmap(pinName);
+  return ((getP.Port->IDR) >> getP.pin) & 1UL;
 }
 
 void GPIO_init_MD(PinName_t pinName, uint32_t mode, int pupd, int type,
                   int speed) {
-  GPIO_TypeDef *Port;
-  unsigned int pin;
-  ecPinmap(pinName, &Port, &pin);
+  Pinmap getP = getPinmap(pinName);
   // RCC_GPIO_enable(Port);
   GPIO_mode(pinName, mode);
   GPIO_pupd(pinName, pupd);
@@ -156,6 +138,12 @@ void FND_tensdigit(uint8_t select1, uint8_t select2, uint8_t num1, uint8_t num2)
 	FND_display(num2);
 	delay_ms_HSI(1);
 }
+
+void led_toggle(PinName_t pinName){
+	Pinmap getP = getPinmap(pinName);
+	getP.Port->ODR ^= (1UL << getP.pin);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 

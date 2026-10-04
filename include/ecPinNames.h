@@ -121,11 +121,14 @@ typedef enum {
     NC = (int)0xFFFFFFFF
 } PinName_t;
 
+typedef struct {
+    GPIO_TypeDef *Port;
+    unsigned int pin;
+} Pinmap;
+
+Pinmap getPinmap(PinName_t pinName);
 
 void ecPinmap(PinName_t pinName, GPIO_TypeDef **GPIOx, unsigned int *pin);
-
-
-
 
 #ifdef __cplusplus
 }

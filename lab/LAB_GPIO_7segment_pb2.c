@@ -5,9 +5,10 @@
 	/----------------------------------------------------------------*/
 
 
-#include "ecGPIO2.h"
-#include "ecRCC2.h"
-#include "stm32f4xx.h"
+#include "ecSTM32F4v2.h"
+// #include "ecGPIO2.h"
+// #include "ecRCC2.h"
+// #include "stm32f4xx.h"
 
 #define BUTTON_PIN PA_4
 PinName_t pinFND[8] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};
@@ -36,7 +37,7 @@ int main(void) {
 	while(1){
 		ButtonState=GPIO_read(BUTTON_PIN);
 		if(preBS==1 && ButtonState == 0){
-			cnt=(cnt+1)%20;
+			cnt=(cnt+1)%60;
 		}
 		tendigits=cnt/10;
 		onedigits=cnt%10;

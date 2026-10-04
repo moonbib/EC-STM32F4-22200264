@@ -32,6 +32,7 @@ Description      : STM42F411
 
 // + typedef enum 사용해서 define해도 돼!
 
+
 //공용으로 사용하겠다 싶은 이름들 선언!
 void MCU_init(void){
     // CLOCK PLL 84MHz
@@ -52,5 +53,6 @@ void MCU_init(void){
     // ...
     // Others
 }
+
 
 #endif
