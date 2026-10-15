@@ -25,7 +25,7 @@ Description      : STM42F411
 #include "ecSysTick2.h"
 //#include "ecTIM2.h"
 //#include "ecPWM2.h"
-//#include "ecStepper2.h"
+#include "ecStepper2.h"
 //#include "ecADC2.h"
 //#include "ecUART2.h"
 
@@ -34,7 +34,7 @@ Description      : STM42F411
 
 
 //공용으로 사용하겠다 싶은 이름들 선언!
-void MCU_init(void){
+/*void MCU_init(void){
     // CLOCK PLL 84MHz
     RCC_PLL_init();
     // SysTick 1msec
@@ -52,7 +52,7 @@ void MCU_init(void){
     // USART Default Initialization
     // ...
     // Others
-}
+}*/
 
 
 #endif

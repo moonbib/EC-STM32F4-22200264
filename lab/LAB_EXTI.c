@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------\
 Author           : [Jueon Moon]
 Modified         : 10-04-2026
-Description      : Tutorial - [Your Description GOES HERE !!] 
+Description      : [You can see the STM working likes DigitalClock] 
 /----------------------------------------------------------------*/
 
 #include "ecSTM32F4v2.h"
@@ -20,7 +20,10 @@ PinName_t selectFND[4] = {PA_10, PA_11, PC_4, PC_3};
 // Initialiization 
 void setup(void)
 {
-    MCU_init();
+    // CLOCK PLL 84MHz
+    RCC_PLL_init();
+    // SysTick 1msec
+    SysTick_init();  
     GPIO_init(LED0_PIN, OUTPUT);    // LED0 for EVAL board	    // Initialize GPIOB_12 for Output
     EXTI_input_initialize(SW2_PIN,EC_PU,FALL,10);
     EXTI_input_initialize(SW1_PIN,EC_PU,FALL,9);
