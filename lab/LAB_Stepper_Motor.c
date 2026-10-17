@@ -14,7 +14,6 @@ void setup(void){
 	SysTick_init();                                 // Systick init
 	GPIO_init(BUTTON_PIN, INPUT);           		// GPIOC pin13 initialization
     EXTI_init(BUTTON_PIN, FALL,0);           		// External Interrupt Setting
-
 	stepper_init(FULL, pinStepper); 				// Stepper GPIO pin initialization
 	stepper_speed(14);                          		//  set stepper motor speed
 }

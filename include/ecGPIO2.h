@@ -34,6 +34,22 @@ Description      : GPIO Library. Distributed to Students for LAB_GPIO
 #define EC_PU 1
 #define EC_PD 0
 
+// GPIO Pull-Up / Pull-Down
+#define NO_PUPD     0x00
+#define PULL_UP     0x01
+#define PULL_DOWN   0x02
+#define RESERVED    0x03
+
+
+// GPIO Output Type
+#define PUSH_PULL   0x00
+#define OPEN_DRAIN  0x01
+
+// GPIO Output Speed
+#define LOW_SPEED   0x00
+#define MID_SPEED   0x01
+#define FAST_SPEED  0x02
+#define HIGH_SPEED  0x03
 
 
 

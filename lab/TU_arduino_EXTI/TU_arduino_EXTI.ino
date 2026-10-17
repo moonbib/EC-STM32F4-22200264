@@ -1,24 +1,17 @@
-const int btnPin = 3;
-const int ledPin =  13; 
 
-int btnState = HIGH;
+char keyIn;
 
 void setup() {
-    pinMode(ledPin, OUTPUT);
-    pinMode(btnPin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(btnPin), blink, CHANGE);
+  Serial.begin(9600);
+  Serial.print("Hello Nucleo\r\n");
 }
 
 void loop() {
-    // blank
-}
-
-
-void blink(){
-    btnState = digitalRead(btnPin);
-
-    if (btnState == HIGH)
-        digitalWrite(ledPin, LOW);
-    else 
-        digitalWrite(ledPin, HIGH);
+  if (Serial.available() > 0){
+    keyIn = Serial.read();
+    if (keyIn == '\n')
+      Serial.print("\r\n");
+    else if (keyIn)
+      Serial.print(keyIn);
+  }
 }
