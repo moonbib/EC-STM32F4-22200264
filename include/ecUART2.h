@@ -13,6 +13,7 @@ Description      : USART2  library
 #include "stm32f411xe.h"
 #include "ecGPIO2.h"
 #include "ecRCC2.h"
+#include "ecSTM32F4v2.h"
 
 
 #define POL 0
@@ -82,9 +83,12 @@ uint8_t USART_read(USART_TypeDef * USARTx);
 uint32_t is_USART_RXNE(USART_TypeDef * USARTx);
 void USART_delay(uint32_t us);  
 
-								
+// Bluetooth LAB control
+void UART_control_init(PinName_t ledPin, uint32_t totalSteps);
+void UART_control_task(void);
+// Called from USART interrupt handlers
+void receive_irq(USART_TypeDef *uart, uint8_t source);								
+
+
 
 #endif // __EC_USART2_STUDENT_H
-
-
-

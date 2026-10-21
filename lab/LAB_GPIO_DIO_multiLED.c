@@ -3,47 +3,38 @@
 	Modified         : 09-23-2026 
 	Description      : [ press the button, get diffents LED Toggle ]
 	/----------------------------------------------------------------*/
+	#include "ecSTM32F4v2.h"
+	// #include "ecPinNames.h"
+	// #include "ecRCC2.h"
+	// #include "ecGPIO2.h"
 
-	#include "ecPinNames.h"
-	#include "ecRCC2.h"
-	#include "ecGPIO2.h"
+	#define SW2_PIN PA_4
+	#define LED_COUNT    4U
+	#define INITIAL_LED  0U
 
-	#define LED_PIN_0 PB_12
-   	#define LED_PIN_1 PB_13
-   	#define LED_PIN_2 PB_14
-   	#define LED_PIN_3 PB_15
-    #define BUTTON_PIN PA_4
-	PinName_t LED_PINS[4]={LED_PIN_0, LED_PIN_1, LED_PIN_2, LED_PIN_3};
-
+	PinName_t LED_PINS[LED_COUNT] = {PB_12, PB_13, PB_14, PB_15};
 
 
 // Initialiization 
-	void setup(void) {
-		RCC_HSI_init();
-		// initialize the pushbutton pin as an input:
-		GPIO_init(BUTTON_PIN, INPUT);  
-		GPIO_pupd(BUTTON_PIN,1);
-		// initialize the LED pin as an output:
-		for(int i=0; i<4; i++){
-			GPIO_init(LED_PINS[i],OUTPUT);
-			GPIO_pupd(LED_PINS[i],1);
-		}
-		GPIO_write(LED_PINS[0],HIGH);
-	}
-
+void setup(void)
+{
+    RCC_HSI_init();
+    LAB_multiLED_init(
+        SW2_PIN, LED_PINS, LED_COUNT, INITIAL_LED);
+}
 
     int main(void) { 
 		setup();
-		int buttonState=1;
+		int buttonState=GPIO_read(SW2_PIN);
 		int preBS=1;
-		int led_state = 0;
+		int led_state = INITIAL_LED;
 
 		while(1){
 			// check if the pushbutton is pressed. Turn LED on/off accordingly:
-			buttonState = GPIO_read(BUTTON_PIN);				
+			buttonState = GPIO_read(SW2_PIN);				
 			if(preBS== 1 && buttonState == 0){
-				led_state = (led_state + 1) % 4;
-				for(int i=0; i < 4; i++){
+				led_state = (led_state + 1) % LED_COUNT;
+				for(int i=0; i < LED_COUNT; i++){
 					GPIO_write(LED_PINS[i],(i==led_state));
 				}
 				delay_ms_HSI(100);

@@ -70,8 +70,7 @@ uint32_t GPIO_read(PinName_t pinName) {
   return ((getP.Port->IDR) >> getP.pin) & 1UL;
 }
 
-void GPIO_init_MD(PinName_t pinName, uint32_t mode, int pupd, int type,
-                  int speed) {
+void GPIO_init_MD(PinName_t pinName, uint32_t mode, int pupd, int type, int speed) {
   Pinmap getP = getPinmap(pinName);
   // RCC_GPIO_enable(Port);
   GPIO_mode(pinName, mode);
@@ -104,6 +103,7 @@ void FND_init(PinName_t *pinFND) {
   for (int i = 0; i < 8; i++) {
     _fndPins[i] = pinFND[i];
     GPIO_init(_fndPins[i], OUTPUT);
+   GPIO_ospeed(_fndPins[i], 1);  // 추가: Medium speed
   }
 }
 

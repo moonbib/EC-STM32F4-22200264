@@ -5,10 +5,10 @@ Modified         : 09-30-2026
 Description      : [handle external inturrupt]
 /----------------------------------------------------------------*/
 
-
-#include "ecGPIO2.h"
-#include "ecSysTick2.h"
-#include "ecEXTI2.h"
+#include "ecSTM32F4v2.h"
+// #include "ecGPIO2.h"
+// #include "ecSysTick2.h"
+// #include "ecEXTI2.h"
 
 void EXTI_init(PinName_t pinName, uint32_t trig_type,uint32_t priority){
 	Pinmap getP = getPinmap(pinName);

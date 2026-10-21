@@ -1,21 +1,29 @@
-#include "stm32f411xe.h"
-#include "ecGPIO2.h"
-#include "ecRCC2.h"
-#include "ecEXTI2.h"
-#include "ecSysTick2.h"
-#include "ecStepper2.h"
+#include "ecSTM32F4v2.h"
+// #include "stm32f411xe.h"
+// #include "ecGPIO2.h"
+// #include "ecRCC2.h"
+// #include "ecEXTI2.h"
+// #include "ecSysTick2.h"
+// #include "ecStepper2.h"
 
+#define MOTOR_RPM      14U
+#define STOP_PRIORITY  0U
 // ( A, B,  AN,  BN)
 PinName_t pinStepper[4]    = {PB_10,PB_4,PB_5,PB_3};
 
 // Initialiization 
 void setup(void){	
-	RCC_PLL_init();                                 // System Clock = 84MHz
-	SysTick_init();                                 // Systick init
-	GPIO_init(BUTTON_PIN, INPUT);           		// GPIOC pin13 initialization
-    EXTI_init(BUTTON_PIN, FALL,0);           		// External Interrupt Setting
-	stepper_init(FULL, pinStepper); 				// Stepper GPIO pin initialization
-	stepper_speed(14);                          		//  set stepper motor speed
+	// Common initialization: configure only once.
+    RCC_PLL_init();
+    SysTick_init();
+
+    // Motor initialization.
+    LAB_stepper_init(pinStepper, FULL, MOTOR_RPM);
+
+    // Optional stop button: PC13.
+    // Enable its interrupt after initializing the motor.
+    GPIO_init(BUTTON_PIN, INPUT);
+    EXTI_init(BUTTON_PIN, FALL, STOP_PRIORITY);                         		//  set stepper motor speed
 }
 
 int main(void) { 

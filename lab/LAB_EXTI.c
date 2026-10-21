@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------\
 Author           : [Jueon Moon]
 Modified         : 10-04-2026
-Description      : [You can see the STM working likes DigitalClock] 
+Description      : [STM working likes DigitalClock] 
 /----------------------------------------------------------------*/
 
 #include "ecSTM32F4v2.h"
@@ -14,23 +14,21 @@ Description      : [You can see the STM working likes DigitalClock]
 #define SW2_PIN    PA_4			//EVAL board JKIT SW2
 #define SW1_PIN    PD_2
 
+#define PAUSE_PRIORITY  10U
+#define RESET_PRIORITY  9U
+
 PinName_t pinFND[8] = {PB_0, PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7};
 PinName_t selectFND[4] = {PA_10, PA_11, PC_4, PC_3};    
 
 // Initialiization 
 void setup(void)
 {
-    // CLOCK PLL 84MHz
+    // Configure the clock before initializing SysTick.
     RCC_PLL_init();
-    // SysTick 1msec
-    SysTick_init();  
-    GPIO_init(LED0_PIN, OUTPUT);    // LED0 for EVAL board	    // Initialize GPIOB_12 for Output
-    EXTI_input_initialize(SW2_PIN,EC_PU,FALL,10);
-    EXTI_input_initialize(SW1_PIN,EC_PU,FALL,9);
-    FND_init(pinFND);
-    FND_select_init(selectFND);
-}
+    SysTick_init();
 
+    LAB_EXTI_init(LED0_PIN, SW2_PIN, SW1_PIN, pinFND, selectFND, PAUSE_PRIORITY, RESET_PRIORITY);
+}
 
 // MAIN  ----------------------------------------
 int main(void) {

@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------\
-@ Embedded Controller by Young-Keun Kim - Handong Global University
-Author           : [ YOUR NAME GOES HERE !!!!!]
-Created          : 05-03-2021
-Modified         : 00-00-2026 [WRITE THE DATE!!!!]
-Language/ver     : C++ in VS Code
-
-Description      : SysTick Library. Distributed to Students for LAB_SYSTICK
+Author           : [Jueon Moon]
+Modified         : 10-21-2026 
+Description      : SysTick Library
 /----------------------------------------------------------------*/
-// #include "ecSysTick2.h"
-#include "ecSysTick2.h"
 
+// #include "ecSysTick2.h"
+#include "ecSTM32F4v2.h"
 volatile uint32_t msTicks;
 // Initialize 1 ms tick of SysTick timer. 
 // Must call AFTER RCC_HSI_init() (16 MHz) or RCC_PLL_init() (84 MHz)

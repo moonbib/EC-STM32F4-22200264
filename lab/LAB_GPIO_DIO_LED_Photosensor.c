@@ -5,32 +5,34 @@ Description      : [ this code aware photo, have difference output, high and low
 ] 
 /----------------------------------------------------------------*/
 
-#include "ecRCC2.h"
-#include "ecGPIO2.h"
+#include "ecSTM32F4v2.h"
+// #include "ecRCC2.h"
+// #include "ecGPIO2.h"
 
-#define LED_PIN PB_12
-#define BUTTON_PIN PA_0
+#define SENSOR_PIN     PA_0
+#define PHOTO_LED_PIN  PB_12
 
 // Initialiization
-void setup(void) {
-  RCC_HSI_init();
-  // initialize the pushbutton pin as an input:
-  GPIO_init(BUTTON_PIN, INPUT);
-  // initialize the LED pin as an output:
-  GPIO_init(LED_PIN, OUTPUT);
+void setup(void)
+{
+    RCC_HSI_init();
+    LAB_photosensor_init(SENSOR_PIN, PHOTO_LED_PIN);
 }
 
 int main(void) {
   setup();
-  int buttonState = 0;
+  int sensorState = 0;
 
   while (1) {
-    // check if the pushbutton is pressed. Turn LED on/off accordingly:
-    buttonState = GPIO_read(BUTTON_PIN);
-    if (buttonState)
-      GPIO_write(LED_PIN, LOW);
-    else
-      GPIO_write(LED_PIN, HIGH);
-    delay_ms_HSI(100); // delay 100 ms
+    // Read the photosensor's digital output.
+        sensorState = GPIO_read(SENSOR_PIN);
+
+        // LOW input: LED ON. HIGH input: LED OFF.
+        if (sensorState)
+            GPIO_write(PHOTO_LED_PIN, LOW);
+        else
+            GPIO_write(PHOTO_LED_PIN, HIGH);
+
+        delay_ms_HSI(100);
   }
 }
