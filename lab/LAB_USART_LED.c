@@ -2,7 +2,7 @@
 @ Embedded Controller by Young-Keun Kim - Handong Global University
 Author      : Jueon Moon
 Modified    : 10-20-2026
-Description : ss
+Description : connect other's tera term and control it
 ----------------------------------------------------------------*/
 
 #include "ecSTM32F4v2.h"
@@ -70,7 +70,6 @@ int main(void){
 
 
 // USART2: PC -> MCU -> Other MCU
-
 void USART2_IRQHandler(void){
     if(is_USART2_RXNE()){
 

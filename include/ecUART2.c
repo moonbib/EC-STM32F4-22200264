@@ -4,8 +4,8 @@ Modified         : 10-17-2026
 Language/ver     : C in VS Code
 Description      : USART2  library  
 /----------------------------------------------------------------*/
-
-#include "ecUART2.h"
+#include "ecSTM32F4v2.h"
+//#include "ecUART2.h"
 
 
 // ********************** DO NOT MODIFY HERE ***************************
@@ -210,12 +210,12 @@ void USART1_init(void){
    GPIO_init(pin_GPIO_TX, AF);
    GPIO_otype(pin_GPIO_TX, PUSH_PULL);
    GPIO_pupd(pin_GPIO_TX, LOW);
-   GPIO_ospeed(pin_GPIO_TX, HIGH);
+   GPIO_ospeed(pin_GPIO_TX, HIGH_SPEED);
 
    GPIO_init(pin_GPIO_RX, AF);
    GPIO_otype(pin_GPIO_RX, PUSH_PULL);
    GPIO_pupd(pin_GPIO_RX, LOW);
-   GPIO_ospeed(pin_GPIO_RX, HIGH);
+   GPIO_ospeed(pin_GPIO_RX, HIGH_SPEED);
 
     // Set Alternate Function Register for USARTx
    //   AF7 - USART1, USART2
@@ -306,12 +306,12 @@ void USART2_init(void){
 	GPIO_init(pin_GPIO_TX, AF);
 	GPIO_otype(pin_GPIO_TX, PUSH_PULL);
 	GPIO_pupd(pin_GPIO_TX, NO_PUPD);
-	GPIO_ospeed(pin_GPIO_TX, HIGH);
+	GPIO_ospeed(pin_GPIO_TX, HIGH_SPEED);
 
 	GPIO_init(pin_GPIO_RX, AF);
 	GPIO_otype(pin_GPIO_RX, PUSH_PULL);
 	GPIO_pupd(pin_GPIO_RX, NO_PUPD);
-	GPIO_ospeed(pin_GPIO_RX, HIGH);
+	GPIO_ospeed(pin_GPIO_RX, HIGH_SPEED);
 
  	// Set Alternate Function Register for USARTx
 	//   AF7 - USART1, USART2
@@ -602,7 +602,7 @@ void UART_control_task(void)
         else if (key == 'J') {
             direction = DIR_CW;
             remainingSteps = steps;
-            reply = "CW Start\r\n";
+            reply = "CW Start\r\n";            
         }
         else if (key == 'K') {
             direction = DIR_CCW;

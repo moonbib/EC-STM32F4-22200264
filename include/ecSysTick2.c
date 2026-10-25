@@ -13,16 +13,16 @@ volatile uint32_t msTicks;
 void SysTick_init(void){
 	//  SysTick Control and Status Register
 	// Reset to CTRL to Disable SysTick IRQ and SysTick Counter
-	SysTick->CTRL = 0;											
-	// SysTick->CTRL &=~1UL<<0;											
+	//SysTick->CTRL = 0;											
+	SysTick->CTRL &=~1UL<<0;											
 
 	// Select processor clock
 	// 1 = processor clock;  0 = external clock
-	SysTick->CTRL |= SysTick_CTRL_CLKSOURCE_Msk;  // [YOUR CODE GOES HERE!!]
+	SysTick->CTRL |= SysTick_CTRL_CLKSOURCE_Msk;  // [(1UL << 2UL)]
 
 	// Enables SysTick exception request
 	// 1 = counting down to zero --> SysTick exception request 
-	SysTick->CTRL |=  SysTick_CTRL_TICKINT_Msk;  // [YOUR CODE GOES HERE!!]
+	SysTick->CTRL |=  SysTick_CTRL_TICKINT_Msk;  // [(1UL << 1UL)]
 
 	// SysTick Reload Value Register : (SYSCLK / 1000) - 1  ->  1 ms
     // EC_SYSCLK :  HSI 16 MHz or PLL 84 MHz

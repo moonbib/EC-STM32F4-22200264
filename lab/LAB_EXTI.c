@@ -26,7 +26,6 @@ void setup(void)
     // Configure the clock before initializing SysTick.
     RCC_PLL_init();
     SysTick_init();
-
     LAB_EXTI_init(LED0_PIN, SW2_PIN, SW1_PIN, pinFND, selectFND, PAUSE_PRIORITY, RESET_PRIORITY);
 }
 

@@ -1,6 +1,6 @@
 #include "ecSTM32F4v2.h"
 // this should include #include "ecUART2.h" 
-#include "ecUART2.h" 
+//#include "ecUART2.h" 
 
 static volatile uint8_t PC_Data = 0;
 static volatile uint8_t BT_Data = 0;

@@ -1,18 +1,15 @@
 /*----------------------------------------------------------------\
 @ Embedded Controller by Young-Keun Kim - Handong Global University
-Author           : [ YOUR NAME GOES HERE !!!!!]
-Created          : 05-03-2021
-Modified         : 09-09-2026
-Language/ver     : C++ in VS Code
-
-Description      : Tutorial - [Your Description GOES HERE !!] 
+Author           : [ Jueon Moon ]
+Modified         : 10-22-2026
+Description      : Tutorial  
 /----------------------------------------------------------------*/
 
-
-#include "stm32f411xe.h"
-#include "ecRCC2.h"
-#include "ecGPIO2.h"
-#include "ecSysTick2.h"  
+#include "ecSTM32F4v2.h"
+// #include "stm32f411xe.h"
+// #include "ecRCC2.h"
+// #include "ecGPIO2.h"
+// #include "ecSysTick2.h"  
 #define LED_JK PB_12  // LED for Eval Board	JKIT
 
 void setup(void)
@@ -21,7 +18,6 @@ void setup(void)
     SysTick_init(); 
     GPIO_init(LED_JK, OUTPUT);       // LED for Eval Board	JKIT    
 }
-
 
 int main(void) {	    
 	setup();
