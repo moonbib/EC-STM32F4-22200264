@@ -11,8 +11,9 @@ Description      : [handle external inturrupt]
 // #include "ecEXTI2.h"
 
 void EXTI_init(PinName_t pinName, uint32_t trig_type,uint32_t priority){
-	Pinmap getP = getPinmap(pinName);
-
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
 	// Enable EXTI Clock with SYSCFG controller clock 	
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;		
 	
@@ -22,31 +23,31 @@ void EXTI_init(PinName_t pinName, uint32_t trig_type,uint32_t priority){
 	// Pin 8~11: EXTICR3 // EXTICR[2]
 	// Pin 12~15: EXTICR4 // EXTICR[3]	
 	uint32_t EXTICR_port=0;
-	if		(getP.Port == GPIOA) EXTICR_port = 0;
-	else if	(getP.Port == GPIOB) EXTICR_port = 1;
-	else if	(getP.Port == GPIOC) EXTICR_port = 2;
-	else if	(getP.Port == GPIOD) EXTICR_port = 3;
+	if		(Port == GPIOA) EXTICR_port = 0;
+	else if	(Port == GPIOB) EXTICR_port = 1;
+	else if	(Port == GPIOC) EXTICR_port = 2;
+	else if	(Port == GPIOD) EXTICR_port = 3;
 	else					EXTICR_port = 4;
 	
-	SYSCFG->EXTICR[getP.pin/4] &= ~(0xFUL << 4*(getP.pin%4));			// clear 4 bits
-	SYSCFG->EXTICR[getP.pin/4] |= EXTICR_port << 4*(getP.pin%4);			// Set 4 bits
+	SYSCFG->EXTICR[pin/4] &= ~(0xFUL << 4*(pin%4));			// clear 4 bits
+	SYSCFG->EXTICR[pin/4] |= EXTICR_port << 4*(pin%4);			// Set 4 bits
 	
 	// Select  Trigger edge (RISE, FALL, BOTH)
-	if (trig_type == FALL) 		EXTI->FTSR |= 1UL << getP.pin;  // Falling trigger enable 
-	else if	(trig_type == RISE) EXTI->RTSR |= 1UL << getP.pin;   // Rising trigger enable 
+	if (trig_type == FALL) 		EXTI->FTSR |= 1UL << pin;  // Falling trigger enable 
+	else if	(trig_type == RISE) EXTI->RTSR |= 1UL << pin;   // Rising trigger enable 
 	else if	(trig_type == BOTH) {			// Both falling/rising trigger enable
-		EXTI->RTSR |= 1UL << getP.pin; 
-		EXTI->FTSR |= 1UL << getP.pin;
+		EXTI->RTSR |= 1UL << pin; 
+		EXTI->FTSR |= 1UL << pin;
 	} 
 	
 	// Enable EXTI, with Not-Masked Interrupt Request 
 	// Not-mask (==Enable) EXTIx
- 	EXTI->IMR |= 1UL << getP.pin;
+ 	EXTI->IMR |= 1UL << pin;
 	
 	// NVIC(IRQ) Setting
 	uint32_t EXTI_IRQn = 0;
-	if (getP.pin < 5) 		EXTI_IRQn = EXTI0_IRQn + getP.pin;
-	else if	(getP.pin < 10) 	EXTI_IRQn = EXTI9_5_IRQn;
+	if (pin < 5) 		EXTI_IRQn = EXTI0_IRQn + pin;
+	else if	(pin < 10) 	EXTI_IRQn = EXTI9_5_IRQn;
 	else 				EXTI_IRQn = EXTI15_10_IRQn;
 		
 	NVIC_SetPriority(EXTI_IRQn, priority);	
@@ -55,26 +56,34 @@ void EXTI_init(PinName_t pinName, uint32_t trig_type,uint32_t priority){
 
 
 void EXTI_enable(PinName_t pinName) {
-	Pinmap getP = getPinmap(pinName);
-	EXTI->IMR |= 1UL << getP.pin;     // not masked (i.e., Interrupt enabled)
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
+	EXTI->IMR |= 1UL << pin;     // not masked (i.e., Interrupt enabled)
 }
 
 void EXTI_disable(PinName_t pinName) {
-	Pinmap getP = getPinmap(pinName);
-	EXTI->IMR &= ~(1UL << getP.pin);     // masked (i.e., Interrupt disabled)
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
+	EXTI->IMR &= ~(1UL << pin);     // masked (i.e., Interrupt disabled)
 }
 
 uint32_t is_pending_EXTI(PinName_t pinName) {
-	Pinmap getP = getPinmap(pinName);
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
 	uint32_t EXTI_PRx =  EXTI->PR;     // read PRx, EXTI pending bit.  Use  (REG>>k & 1) to read.
-	return  (EXTI_PRx >> getP.pin) & 1UL; 	// Return only 0 or 1
+	return  (EXTI_PRx >> pin) & 1UL; 	// Return only 0 or 1
 }
 
 void clear_pending_EXTI(PinName_t pinName){
 	// Port, Pin Configuration
-	Pinmap getP = getPinmap(pinName);
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
 	// clear by writing 1 to the pending bit
-	EXTI->PR  = (1UL << getP.pin);     
+	EXTI->PR  = (1UL << pin);     
 }
 
 void EXTI_input_initialize(PinName_t pinName, uint32_t pupd, uint32_t trig_type, uint32_t priority){

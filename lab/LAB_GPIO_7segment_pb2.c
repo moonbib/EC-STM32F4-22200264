@@ -26,7 +26,7 @@ void setup(void)
 int main(void) { 
 	setup();
 	unsigned int cnt = 0;
-	int ButtonState=GPIO_read(SW2_PIN);
+	int ButtonState;
 	int preBS=ButtonState;
 	uint8_t tendigits = 0;
  	uint8_t onedigits = 0;

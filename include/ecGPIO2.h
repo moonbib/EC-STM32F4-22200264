@@ -79,7 +79,7 @@ void FND_display(uint8_t num);
 void FND_select(uint8_t digit);
 void FND_tensdigit(uint8_t select1, uint8_t select2, uint8_t num1, uint8_t num2);
 void led_toggle(PinName_t pinName);
-
+void FND_onedigit(uint8_t select1, uint8_t num1);
 
 
 #ifdef __cplusplus

@@ -22,9 +22,3 @@ void ecPinmap(PinName_t pinName, GPIO_TypeDef **GPIOx, unsigned int *pin)
 	else 
 		*GPIOx=GPIOA;
 }
-
-Pinmap getPinmap(PinName_t pinName){
-	Pinmap getP;
-	ecPinmap(pinName, &getP.Port, &getP.pin);
-	return getP;
-}

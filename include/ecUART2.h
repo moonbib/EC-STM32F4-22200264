@@ -88,7 +88,7 @@ void UART_control_init(PinName_t ledPin, uint32_t totalSteps);
 void UART_control_task(void);
 // Called from USART interrupt handlers
 void receive_irq(USART_TypeDef *uart, uint8_t source);								
-
+void UART_middle_c(void);
 
 
 #endif // __EC_USART2_STUDENT_H

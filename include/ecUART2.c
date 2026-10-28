@@ -179,7 +179,6 @@ void USART2_baud(uint32_t baud){
 /*----------------------------------------------------------------\
         PROVIDED: DON'T MODIFY HERE
 /----------------------------------------------------------------*/
-
 /*================ Configuration for each USART ================*/
 void USART1_init(void){
    // ********************** USART 1 ***************************
@@ -545,18 +544,122 @@ void UART_control_init(PinName_t ledPin, uint32_t totalSteps)
     __set_PRIMASK(irqState);
 
     terminal_write("\r\nMCU Initialized - BT TEST v3\r\n");
-    terminal_write("H/L: LED  J/K: 2 revolutions  P: STOP\r\n");
+    terminal_write("C/B: 2 revolutions  P: STOP\r\n");
 }
 
 
 // Call repeatedly from main.
-void UART_control_task(void)
-{
+// void UART_control_task(void)
+// {
+//     uint8_t command = 0;
+//     uint8_t source = 0;
+//     uint8_t overflow;
+//     uint8_t error;
+
+//     // Safely take one received command.
+//     uint32_t irqState = __get_PRIMASK();
+//     __disable_irq();
+
+//     overflow = rxOverflow;
+//     error = uartError;
+//     rxOverflow = 0;
+//     uartError = 0;
+
+//     if (stopRequested) {
+//         command = 'P';
+//         source = stopSource;
+
+//         // Discard commands waiting before STOP.
+//         rxTail = rxHead;
+//         stopRequested = 0;
+//     }
+//     else if (rxTail != rxHead) {
+//         command = rxBuffer[rxTail];
+//         source = rxSource[rxTail];
+//         rxTail = (rxTail + 1U) % RX_BUF_SIZE;
+//     }
+
+//     __set_PRIMASK(irqState);
+
+//     // Process a received character. Enter is not required.
+//     if (source != 0 && command != '\r' && command != '\n') {
+//         uint8_t key = command;
+//         const char *reply;
+
+//         if (key >= 'a' && key <= 'z') {
+//             key -= ('a' - 'A');
+//         }
+
+//         if (key == 'H') {
+//             GPIO_write(controlLED, HIGH);
+//             reply = "LED ON\r\n";
+//         }
+//         else if (key == 'L') {
+//             GPIO_write(controlLED, LOW);
+//             reply = "LED OFF\r\n";
+//         }
+//         else if (key == 'J') {
+//             direction = DIR_CW;
+//             remainingSteps = steps;
+//             reply = "CW Start\r\n";            
+//         }
+//         else if (key == 'K') {
+//             direction = DIR_CCW;
+//             remainingSteps = steps;
+//             reply = "CCW Start\r\n";
+//         }
+//         else if (key == 'P') {
+//             remainingSteps = 0;
+//             stepper_stop();
+//             reply = "Motor STOP\r\n";
+//         }
+//         else {
+//             reply = "Use H L J K P\r\n";
+//         }
+
+//         char message[48];
+
+//         snprintf(message, sizeof(message),
+//                  "[%s RX] %c (0x%02X)\r\n",
+//                  source == 1 ? "BT" : "USB",
+//                  (command >= 32 && command <= 126) ? command : '?',
+//                  (unsigned int)command);
+
+//         terminal_write(message);
+//         terminal_write(reply);
+//     }
+
+//     if (overflow) {
+//         terminal_write(
+//             "RX buffer full: send one key at a time.\r\n");
+//     }
+
+//     if (error) {
+//         terminal_write(
+//             "UART RX error: check baud and wiring.\r\n");
+//     }
+
+//     // Move one step, then return to main.
+//     if (remainingSteps > 0 && !stopRequested) {
+//         stepper_step(1, direction);
+//         remainingSteps--;
+
+//         if (remainingSteps == 0 && !stopRequested) {
+//             stepper_stop();
+//             terminal_write("Motor Finished\r\n");
+//         }
+//     }
+// }
+
+
+
+void UART_middle_c(void) {
     uint8_t command = 0;
     uint8_t source = 0;
     uint8_t overflow;
     uint8_t error;
-
+    int sensorState = 0;
+    int buttonState = 0;
     // Safely take one received command.
     uint32_t irqState = __get_PRIMASK();
     __disable_irq();
@@ -565,7 +668,9 @@ void UART_control_task(void)
     error = uartError;
     rxOverflow = 0;
     uartError = 0;
-
+    buttonState=GPIO_read(PA_4);
+    sensorState = GPIO_read(PA_0);
+    
     if (stopRequested) {
         command = 'P';
         source = stopSource;
@@ -581,7 +686,6 @@ void UART_control_task(void)
     }
 
     __set_PRIMASK(irqState);
-
     // Process a received character. Enter is not required.
     if (source != 0 && command != '\r' && command != '\n') {
         uint8_t key = command;
@@ -599,17 +703,21 @@ void UART_control_task(void)
             GPIO_write(controlLED, LOW);
             reply = "LED OFF\r\n";
         }
-        else if (key == 'J') {
+        else if (key == 'C') {
             direction = DIR_CW;
             remainingSteps = steps;
-            reply = "CW Start\r\n";            
+            reply = "CW Start\r\n";
+            FND_select(0);
+            FND_display(0);  
         }
-        else if (key == 'K') {
+        else if (key == 'B') {
             direction = DIR_CCW;
             remainingSteps = steps;
             reply = "CCW Start\r\n";
+            FND_select(1);
+            FND_display(0);
         }
-        else if (key == 'P') {
+        else if (sensorState) {
             remainingSteps = 0;
             stepper_stop();
             reply = "Motor STOP\r\n";
@@ -651,3 +759,5 @@ void UART_control_task(void)
         }
     }
 }
+
+

@@ -1,11 +1,7 @@
 /*----------------------------------------------------------------\
-@ Embedded Controller by Young-Keun Kim - Handong Global University
-Author           : [ YOUR NAME GOES HERE !!!!!]
-Created          : 05-03-2021
-Modified         : 00-00-2026 [WRITE THE DATE!!!!]
-Language/ver     : C++ in VS Code
-
-Description      : Stepper Library. [WRITE THE DESCRIPTION!!!!]
+Author           : [Jueon Moon]
+Modified         : 10-28-2026 
+Description      : Stepper Library.
 /----------------------------------------------------------------*/
 
 #include "stm32f411xe.h"
