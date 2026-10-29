@@ -23,7 +23,7 @@ void setup(void) {
     SysTick_init();                 // SysTick Timer Initialization
 
     // Initialize GPIOB_12 for Output
-    GPIO_init(LED_PIN, OUTPUT);     // LED0 for EVAL board
+    GPIO_init(LED0_PIN, OUTPUT);     // LED0 for EVAL board
 
     // Initialize FND segment and digit-selection pins
     FND_init(pinFND);               // Segment pins: PB0–PB7
