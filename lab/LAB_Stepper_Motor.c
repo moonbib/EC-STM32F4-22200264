@@ -1,3 +1,9 @@
+/*----------------------------------------------------------------\
+Author           : [Jueon Moon]
+Modified         : 10-28-2026 
+Description      : Stepper Library.
+/----------------------------------------------------------------*/
+
 #include "ecSTM32F4v2.h"
 // #include "stm32f411xe.h"
 // #include "ecGPIO2.h"
@@ -13,17 +19,20 @@ PinName_t pinStepper[4]    = {PB_10,PB_4,PB_5,PB_3};
 
 // Initialiization 
 void setup(void){	
-	// Common initialization: configure only once.
-    RCC_PLL_init();
-    SysTick_init();
+	RCC_PLL_init();                         // System Clock = 84MHz
+    SysTick_init();                         // SysTick Timer Initialization
 
-    // Motor initialization.
-    LAB_stepper_init(pinStepper, FULL, MOTOR_RPM);
+    // Initialize stepper motor control pins
+    stepper_init(FULL, pinStepper);         // Full-step mode
 
-    // Optional stop button: PC13.
-    // Enable its interrupt after initializing the motor.
-    GPIO_init(BUTTON_PIN, INPUT);
-    EXTI_init(BUTTON_PIN, FALL, STOP_PRIORITY);                         		//  set stepper motor speed
+    // Configure stepper motor speed
+    stepper_speed(MOTOR_RPM);               // Requested speed in RPM
+
+    // Initialize PC13 for Input Button
+    GPIO_init(BUTTON_PIN, INPUT);           // Stop button on NUCLEO board
+
+    // Initialize EXTI PC13 for Motor Stop
+    EXTI_init(BUTTON_PIN, FALL, STOP_PRIORITY);
 }
 
 int main(void) { 
