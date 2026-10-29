@@ -1,12 +1,14 @@
 # EC STM32F411 Course Library — Function Reference
 
 **Author:** Jueon Moon · **Student ID:** 22200264  
-**Documentation review:** 2026-10-17  
-**Source baseline:** [`b94fc559ceaaea1df8729b2d61367fe464374dae`](https://github.com/moonbib/EC-STM32F4-22200264/commit/b94fc559ceaaea1df8729b2d61367fe464374dae)
+**Full-library documentation review:** 2026-10-17  
+**Stepper documentation review:** 2026-10-29  
+**Original source baseline:** [`b94fc559ceaaea1df8729b2d61367fe464374dae`](https://github.com/moonbib/EC-STM32F4-22200264/commit/b94fc559ceaaea1df8729b2d61367fe464374dae)  
+**Stepper source baseline:** [`f1a3b0ec64acf79dc61563e7dc46ad1421306e72`](https://github.com/moonbib/EC-STM32F4-22200264/commit/f1a3b0ec64acf79dc61563e7dc46ad1421306e72)
 
 ## Scope and Reading Guide
 
-This README documents every active function definition in the course library's `include` directory at the source baseline above: **43 definitions, including one empty HSE stub**. It also identifies the three declared-only Arduino-style functions and the commented-out `MCU_init` draft. Vendor CMSIS functions and application entry points such as `main`, `setup`, and application-specific IRQ handlers are not library APIs; application source examples are linked below.
+This README documents every active function definition in the course library's `include` directory at the original source baseline above: **43 definitions, including one empty HSE stub**. The Stepper section and its LAB application were rechecked separately on 2026-10-29 against the Stepper source baseline; the remaining modules retain their original review scope. It also identifies the three declared-only Arduino-style functions and the commented-out `MCU_init` draft. Vendor CMSIS functions and application entry points such as `main`, `setup`, and application-specific IRQ handlers are not library APIs; application source examples are linked below.
 
 Each function entry contains:
 
@@ -15,7 +17,7 @@ Each function entry contains:
 3. **Parameters and return value:** types, directions, meanings, and valid ranges
 4. **Usage example:** required setup and the expected effect
 
-Declaration and definition links are pinned to the reviewed commit so that the documentation remains traceable. Implementation excerpts preserve original comments, including existing template markers or inaccurate comments; the prose and Notes distinguish actual behavior from those comments. This documentation update does not change firmware or claim that all examples have been tested on hardware.
+Declaration and definition links are pinned to each section's reviewed source baseline so that the documentation remains traceable. Implementation excerpts preserve original comments, including existing template markers or inaccurate comments; the prose and Notes distinguish actual behavior from those comments. This documentation update does not change firmware or claim that all examples have been tested on hardware.
 
 ## Function Index
 
@@ -2001,18 +2003,20 @@ int main(void) {
 
 ## Stepper motor library — `ecStepper2.h/.c`
 
+**Reviewed:** 2026-10-29 against [`f1a3b0e`](https://github.com/moonbib/EC-STM32F4-22200264/commit/f1a3b0ec64acf79dc61563e7dc46ad1421306e72). This section uses the current header's direction indices and the implementations at that commit. The LAB [setup](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/lab/LAB_Stepper_Motor.c#L21) calls `stepper_init(FULL, pinStepper)` followed by `stepper_speed(MOTOR_RPM)` directly; `MOTOR_RPM` is 14 and the PC13 stop interrupt priority is 0.
+
 This library stores one motor's pin mapping and state machine globally within its source file. Four GPIO outputs send the excitation pattern to a compatible motor driver; the MCU GPIO pins must not power the motor windings directly. It does not support independent simultaneous motor instances.
 
 ### Constants and state-machine data
 
-Mode, direction and nominal step-count constants are defined in [ecStepper2.h:24](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.h#L24):
+Mode, direction and nominal step-count constants are defined in [ecStepper2.h:20](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.h#L20):
 
 ```c
 // Stepper Mode
 #define HALF 0
 #define FULL 1	 
-#define DIR_CW 1
-#define DIR_CCW 0	  
+#define DIR_CW 0
+#define DIR_CCW 1	  
 
 // Stepper Motor Spec
 // 28BYJ-48 : 64 steps/rev x 1/32 gear = 2048 
@@ -2030,11 +2034,11 @@ typedef struct {
 } StateStepper_t;
 ```
 
-`HALF = 0`, `FULL = 1`, `DIR_CW = 1`, and `DIR_CCW = 0` are the actual values in this repository. `next[0]` is selected by `DIR_CCW`; `next[1]` by `DIR_CW`. Physical clockwise/counterclockwise motion depends on wiring and the shaft-viewing direction, so the names are not a measurement of actual rotation.
+`HALF = 0`, `FULL = 1`, `DIR_CW = 0`, and `DIR_CCW = 1` are the values in the reviewed header. `next[0]` is selected by `DIR_CW`; `next[1]` by `DIR_CCW`. Physical clockwise/counterclockwise motion depends on wiring and the shaft-viewing direction, so the names are not a measurement of actual rotation.
 
 `STEP_PER_REV` is the nominal full-step count 2048. Half-stepping uses nominally 4096 steps per output-shaft revolution. These are library assumptions, not a measurement of an individual motor's gearbox ratio or missed steps.
 
-The full-step and half-step tables are preserved below from [ecStepper2.c:20](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.c#L20). Each row stores two next-state indices and four outputs in A, B, A', B' order:
+The full-step and half-step tables are preserved below from [ecStepper2.c:20](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.c#L20). Each row stores two next-state indices and four outputs in A, B, A', B' order:
 
 ```c
 // Output: A B A' B'
@@ -2058,7 +2062,7 @@ static const StateStepper_t fsm_Half[8] = {
 };
 ```
 
-Internal state is declared at [ecStepper2.c:11](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.c#L11). `stepperPins[4]` stores the pin order; `fsm` selects a table; `state` starts at S0; `_step_delay` starts at 100 ms; and `_steps` supplies the loop's termination bound. `static` gives these variables file scope, while `volatile` on the changing state does not make a multi-operation sequence atomic.
+Internal state is declared at [ecStepper2.c:11](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.c#L11). `stepperPins[4]` stores the pin order; `fsm` selects a table; `state` starts at S0; `_step_delay` starts at 100 ms; and `_steps` supplies the loop's termination bound. `static` gives these variables file scope, while `volatile` on the changing state does not make a multi-operation sequence atomic.
 
 <a id="api-stepper_init"></a>
 ### `stepper_init()`
@@ -2067,7 +2071,7 @@ Internal state is declared at [ecStepper2.c:11](https://github.com/moonbib/EC-ST
 
 Selects the full-step or half-step FSM, copies four driver-input pin names, and configures those pins as GPIO outputs with speed encoding 2.
 
-Declaration: [ecStepper2.h:46](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.h#L46). Definition: [ecStepper2.c:42](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.c#L42).
+Declaration: [ecStepper2.h:42](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.h#L42). Definition: [ecStepper2.c:42](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.c#L42).
 
 **Code structure**
 
@@ -2126,7 +2130,7 @@ stepper_speed(1);
 
 Converts the requested integer RPM to an integer millisecond delay between FSM transitions, using 2048 steps/revolution for full-stepping and 4096 for half-stepping.
 
-Declaration: [ecStepper2.h:49](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.h#L49). Definition: [ecStepper2.c:59](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.c#L59).
+Declaration: [ecStepper2.h:45](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.h#L45). Definition: [ecStepper2.c:59](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.c#L59).
 
 **Code structure**
 
@@ -2176,7 +2180,7 @@ stepper_speed(1);
 
 Executes a blocking movement for the requested number of FSM transitions. Each iteration selects the next state from the direction column, outputs its four-bit excitation pattern, then waits for the configured step delay.
 
-Declaration: [ecStepper2.h:52](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.h#L52). Definition: [ecStepper2.c:72](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.c#L72).
+Declaration: [ecStepper2.h:48](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.h#L48). Definition: [ecStepper2.c:72](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.c#L72).
 
 **Code structure**
 
@@ -2203,7 +2207,7 @@ void stepper_step(uint32_t steps, uint32_t direction){
 | Name | Type | Direction | Meaning and valid range |
 | --- | --- | --- | --- |
 | `steps` | `uint32_t` | Input | Number of FSM transitions; 0 makes no movement. A nominal revolution uses `STEP_PER_REV` in full mode or `STEP_PER_REV * 2U` in half mode. |
-| `direction` | `uint32_t` | Input | Only `DIR_CW` (1) or `DIR_CCW` (0); other values index outside `next[2]`. |
+| `direction` | `uint32_t` | Input | Only `DIR_CW` (0) or `DIR_CCW` (1); other values index outside `next[2]`. |
 | Return | `void` | Return | No return value or completed-step count. |
 
 **Usage example**
@@ -2233,7 +2237,7 @@ stepper_step(STEP_PER_REV, DIR_CCW);
 
 Writes the selected FSM state's four stored output values to the configured driver-input pins.
 
-Declaration: [ecStepper2.h:55](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.h#L55). Definition: [ecStepper2.c:89](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.c#L89).
+Declaration: [ecStepper2.h:51](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.h#L51). Definition: [ecStepper2.c:89](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.c#L89).
 
 **Code structure**
 
@@ -2279,7 +2283,7 @@ stepper_out(S0);
 
 Sets the active movement's loop bound to zero and requests LOW on all four configured driver inputs.
 
-Declaration: [ecStepper2.h:58](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.h#L58). Definition: [ecStepper2.c:100](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecStepper2.c#L100).
+Declaration: [ecStepper2.h:54](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.h#L54). Definition: [ecStepper2.c:100](https://github.com/moonbib/EC-STM32F4-22200264/blob/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include/ecStepper2.c#L100).
 
 **Code structure**
 
@@ -2368,7 +2372,8 @@ The applications illustrate how the library is called; their presence is not a c
 
 ## References
 
-- [Reviewed course source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/b94fc559ceaaea1df8729b2d61367fe464374dae/include): authoritative source for the implementations documented here.
+- [Original reviewed course source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/b94fc559ceaaea1df8729b2d61367fe464374dae/include): source baseline for the original full-library inventory and sections other than Stepper.
+- [Reviewed Stepper source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include): source baseline for the Stepper section updated on 2026-10-29.
 - [STM32F411 reference manual, RM0383](https://www.st.com/resource/en/reference_manual/dm00119316.pdf): GPIO register encodings, clock control, and EXTI routing/acknowledgement.
 - [Arm CMSIS NVIC documentation](https://arm-software.github.io/CMSIS_5/Core/html/group__NVIC__gr.html): distinction between external IRQ enabling and processor exceptions.
 
