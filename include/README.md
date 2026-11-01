@@ -4,20 +4,22 @@
 **Full-library documentation review:** 2026-10-17  
 **Stepper documentation review:** 2026-10-29  
 **EXTI documentation review:** 2026-10-29  
+**Timer/PWM documentation review:** 2026-11-01  
 **Original source baseline:** [`b94fc559ceaaea1df8729b2d61367fe464374dae`](https://github.com/moonbib/EC-STM32F4-22200264/commit/b94fc559ceaaea1df8729b2d61367fe464374dae)  
 **Stepper source baseline:** [`f1a3b0ec64acf79dc61563e7dc46ad1421306e72`](https://github.com/moonbib/EC-STM32F4-22200264/commit/f1a3b0ec64acf79dc61563e7dc46ad1421306e72)  
-**EXTI source baseline:** [`eeb4990ee889093dd58dffb7905922460a4e7403`](https://github.com/moonbib/EC-STM32F4-22200264/commit/eeb4990ee889093dd58dffb7905922460a4e7403)
+**EXTI source baseline:** [`eeb4990ee889093dd58dffb7905922460a4e7403`](https://github.com/moonbib/EC-STM32F4-22200264/commit/eeb4990ee889093dd58dffb7905922460a4e7403)  
+**Timer/PWM source baseline:** [`0d7f9f11ce09d7654f47e4f161cb854802165ce6`](https://github.com/moonbib/EC-STM32F4-22200264/commit/0d7f9f11ce09d7654f47e4f161cb854802165ce6)
 
 ## Scope and Reading Guide
 
-This README documents every active function definition in the course library's `include` directory at the original source baseline above: **43 definitions, including one empty HSE stub**. The Stepper and EXTI sections and their LAB applications were rechecked separately on 2026-10-29 against their respective source baselines; the remaining modules retain their original review scope. It also identifies the three declared-only Arduino-style functions and the commented-out `MCU_init` draft. Vendor CMSIS functions and application entry points such as `main`, `setup`, and application-specific IRQ handlers are not library APIs; application source examples are linked below.
+This README preserves the original full-library review of **43 active definitions, including one empty HSE stub**, at the original source baseline above. The Stepper and EXTI sections and their LAB applications were rechecked separately on 2026-10-29. On 2026-11-01, **13 Timer functions and 8 PWM functions** were added from the final PreLAB Timer Interrupt & PWM report and checked against their GitHub `.c` and `.h` files, bringing the documented module inventory to **64 definitions across eight modules**. The other modules retain their earlier review scope; this is not a claim that every function subsequently added to the repository, including UART control and LAB setup wrappers, has been re-audited or documented here. The original declared-only Arduino-style functions and commented-out `MCU_init` draft remain identified at their pinned baseline. Vendor CMSIS functions and application entry points such as `main`, `setup`, and application-specific IRQ handlers are not counted as library APIs; application examples are linked below.
 
 Each function entry contains:
 
 1. **Function name and purpose**
 2. **Code structure:** the actual implementation, not a proposed replacement
 3. **Parameters and return value:** types, directions, meanings, and valid ranges
-4. **Usage example:** required setup and the expected effect
+4. **Example code / usage example:** required setup and the expected effect
 
 Declaration and definition links are pinned to each section's reviewed source baseline so that the documentation remains traceable. Implementation excerpts preserve original comments, including existing template markers or inaccurate comments; the prose and Notes distinguish actual behavior from those comments. This documentation update does not change firmware or claim that all examples have been tested on hardware.
 
@@ -31,11 +33,13 @@ Declaration and definition links are pinned to each section's reviewed source ba
 | [SysTick](./ecSysTick2.c) | 6 | [`SysTick_init()`](#api-systick_init), [`SysTick_Handler()`](#api-systick_handler), [`SysTick_counter()`](#api-systick_counter), [`delay_ms()`](#api-delay_ms), [`SysTick_reset()`](#api-systick_reset), [`SysTick_val()`](#api-systick_val) |
 | [External interrupts and counter](./ecEXTI2.c) | 7 | [`EXTI_init()`](#api-exti_init), [`EXTI_enable()`](#api-exti_enable), [`EXTI_disable()`](#api-exti_disable), [`is_pending_EXTI()`](#api-is_pending_exti), [`clear_pending_EXTI()`](#api-clear_pending_exti), [`EXTI_input_initialize()`](#api-exti_input_initialize), [`digital_counter()`](#api-digital_counter) |
 | [Stepper motor](./ecStepper2.c) | 5 | [`stepper_init()`](#api-stepper_init), [`stepper_speed()`](#api-stepper_speed), [`stepper_step()`](#api-stepper_step), [`stepper_out()`](#api-stepper_out), [`stepper_stop()`](#api-stepper_stop) |
+| [Timer counter and update interrupts](./ecTIM2.c) | 13 | [`TIM_UI_init()`](#api-tim_ui_init), [`TIM_UI_init_us()`](#api-tim_ui_init_us), [`TIM_UI_enable()`](#api-tim_ui_enable), [`TIM_UI_disable()`](#api-tim_ui_disable), [`is_UIF()`](#api-is_uif), [`clear_UIF()`](#api-clear_uif), [`TIM_init()`](#api-tim_init), [`TIM_init_us()`](#api-tim_init_us), [`TIM_period()`](#api-tim_period), [`TIM_period_ms()`](#api-tim_period_ms), [`TIM_period_us()`](#api-tim_period_us), [`TIM_clock_enable()`](#api-tim_clock_enable), [`get_TIM_IRQn()`](#api-get_tim_irqn) |
+| [PWM output](./ecPWM2.c) | 8 | [`PWM_init_config()`](#api-pwm_init_config), [`PWM_duty()`](#api-pwm_duty), [`PWM_init()`](#api-pwm_init), [`PWM_init_us()`](#api-pwm_init_us), [`PWM_pulsewidth()`](#api-pwm_pulsewidth), [`PWM_pulsewidth_us()`](#api-pwm_pulsewidth_us), [`PWM_mode_config()`](#api-pwm_mode_config), [`PWM_pinmap()`](#api-pwm_pinmap) |
 
 ## Using This Library
 
 - Include the appropriate `.h` file for declarations and compile the matching `.c` files exactly once. Including a header alone does not link an implementation.
-- `ecSTM32F4v2.h` collects the current course headers; it does **not** provide an active `MCU_init()` in this snapshot.
+- `ecSTM32F4v2.h` collects course headers. At the Timer/PWM baseline it includes `ecTIM2.h` and `ecPWM2.h`, and contains LAB setup wrappers; those newer wrappers are outside this update's scope. `MCU_init()` remains a commented draft. The System Header section below documents the older pinned draft.
 - Choose the system clock before initializing SysTick. GPIO register access requires the corresponding peripheral clock.
 - Function-level examples are independent snippets for an STM32F411 application, not standalone desktop C programs or instructions to combine every example into one `main()`.
 - Supply valid pins, array lengths, and state indices. Most functions do not validate arguments or report errors.
@@ -54,6 +58,9 @@ Declaration and definition links are pinned to each section's reviewed source ba
 | Motor speed | Step delay is an integer number of milliseconds. | Requested RPM and actual RPM can differ; zero RPM is not a stop command. |
 | Motor stop | `stepper_stop()` clears the active step bound and outputs. | It is not a persistent pause of the outer application loop. |
 | Pin mapping | The map handles A/B/C/D/H and falls back to A for other encodings. | Do not pass `NC` or unsupported ports; GPIOH clock/EXTI support is incomplete. |
+| Timer periods | TIM initialization does not force a PSC update or reset all existing timer settings. | The first interval can differ from the steady-state period; use valid positive periods and verify the clock assumption. |
+| PWM mapping | Only selected pins on TIM1–TIM4 are mapped; unsupported pins have no error return. | Use the listed pins; do not infer support from generic TIM5 branches. |
+| Tutorial boundaries | Timer tutorial uses `_count > 1000`; PWM tutorial uses `i < 5`. | Nominal LED toggles are 1001 ms apart, and the PWM sweep ends at 80%, not 100%. |
 
 The detailed entries below explain these conditions without silently repairing the source.
 
@@ -2344,9 +2351,1160 @@ void EXTI15_10_IRQHandler(void) {
 - The current `delay_ms()` can still complete before `stepper_step()` returns. The internal FSM state is not reset.
 - Calling before initialization would use the zero-initialized pin array rather than a valid motor mapping; this function has no initialization guard.
 
+<a id="module-timer"></a>
+## Timer Counter and Update Interrupts — `ecTIM2.h/.c`
+
+**Reviewed:** 2026-11-01 against [`0d7f9f1`](https://github.com/moonbib/EC-STM32F4-22200264/commit/0d7f9f11ce09d7654f47e4f161cb854802165ce6). This section covers all **13 active definitions** in `ecTIM2.c`, in source order, and follows the final PreLAB Timer Interrupt & PWM report. Header declarations and source implementations were checked at this baseline.
+
+Source files: [ecTIM2.h](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h), [ecTIM2.c](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c). Include `ecTIM2.h` and compile its source and required RCC/GPIO/pin-mapping dependencies.
+
+### Time base and register roles
+
+| Register / field | Role in this library |
+| --- | --- |
+| `PSC` | Divides the timer input clock by `PSC + 1`. |
+| `ARR` | Defines the terminal count; an up-counting period contains `ARR + 1` counter clocks. |
+| `CNT` | Hardware's current count; these initialization functions do not explicitly clear it. |
+| `CR1.DIR` | Selects up/down direction on timers with that field; clearing it selects up-counting. |
+| `CR1.CEN` | Enables the counter independently of interrupt requests. |
+| `DIER.UIE` | Permits timer update-interrupt requests. |
+| `SR.UIF` | Update flag; the program acknowledges it by writing zero. |
+| `EGR.UG` | Software-generated update event; not explicitly generated by the TIM initialization functions here. |
+
+For ordinary edge-aligned up-counting with no repetition division:
+
+```text
+f_CNT = f_TIM / (PSC + 1)
+T_update = (ARR + 1) / f_CNT
+```
+
+With an 84 MHz timer input: the millisecond path requests 10 kHz (`PSC = 8399`), so 1 ms uses `ARR = 9`; the microsecond path requests 1 MHz (`PSC = 83`), so 1000 us uses `ARR = 999`.
+
+**Clock assumption:** the source uses `EC_SYSCLK` as `f_TIM` instead of decoding RCC. The reviewed [RCC_PLL_init()](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecRCC2.c#L33) sets HCLK to 84 MHz, APB1 to 42 MHz, and APB2 to 84 MHz. Under the normal STM32F411 timer clock selection (`TIMPRE = 0`), the APB1 timers receive 84 MHz because their APB prescaler is not 1, and the APB2 timers receive 84 MHz. Changed RCC settings must be checked; the library does not detect them. The older clock-function section elsewhere retains its own pinned baseline.
+
+**First interval:** PSC is buffered and takes effect at an update event. These TIM functions do not generate UG before starting, so the first interval can differ from the steady-state period. Period setters also do not stop/restart an already running timer or reset all its modes. The entries document the current source rather than silently adding an initialization sequence.
+
+**Ranges:** no argument validation is performed. Use positive periods and valid timers; narrow ARR registers and integer overflow constrain the maximum period. The source comments sometimes confuse a divisor with the register value: a divisor of 8400 means `PSC = 8399`, and a divisor of 84 means `PSC = 83`.
+
+<a id="api-tim_ui_init"></a>
+### `TIM_UI_init()`
+
+**Purpose:** Initialize and start the timer with a millisecond period, enable update-interrupt requests, and enable its NVIC interrupt at priority 2.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L26) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L26)
+
+**Code structure**
+
+```c
+void TIM_UI_init(TIM_TypeDef* TIMx, uint32_t msec){
+// 1. Initialize Timer	
+	TIM_init(TIMx,msec);
+
+// 2. Enable Update Interrupt
+	TIM_UI_enable(TIMx);	
+
+// 3. NVIC Setting
+	uint32_t IRQn_reg = get_TIM_IRQn(TIMx);
+	NVIC_EnableIRQ(IRQn_reg);				
+	NVIC_SetPriority(IRQn_reg,2);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `msec` | `uint32_t` | Input | Positive requested period in milliseconds; keep within the selected timer and integer-arithmetic limits. At 10 kHz, 1–6553 ms fits a 16-bit ARR. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+#include "ecTIM2.h"
+
+/* In setup(), with a matching TIM2_IRQHandler() in the application. */
+RCC_PLL_init();
+TIM_UI_init(TIM2, 1U);
+```
+
+Requests nominal 1 ms update interrupts after the prescaler is applied. The hardware enters the application handler; do not call that handler manually.
+
+**Notes:** Calls TIM_init(), TIM_UI_enable(), and get_TIM_IRQn(). This function enables the NVIC IRQ before setting its priority. It does not provide the application handler, and the first-period limitation described above still applies.
+
+<a id="api-tim_ui_init_us"></a>
+### `TIM_UI_init_us()`
+
+**Purpose:** Initialize timer update interrupts with a period expressed in microseconds.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L27) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L39)
+
+**Code structure**
+
+```c
+void TIM_UI_init_us(TIM_TypeDef* TIMx, uint32_t usec){
+// 1. Initialize Timer	
+	TIM_init_us(TIMx,usec);
+	
+// 2. Enable Update Interrupt
+	TIM_UI_enable(TIMx);
+	
+// 3. NVIC Setting
+	uint32_t IRQn_reg = get_TIM_IRQn(TIMx);
+	NVIC_EnableIRQ(IRQn_reg);				
+	NVIC_SetPriority(IRQn_reg,2);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `usec` | `uint32_t` | Input | Positive requested period in microseconds; at 1 MHz, 1–65536 us fits a 16-bit ARR. TIM2/TIM5 have a wider ARR, subject to integer limits. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+#include "ecTIM2.h"
+
+/* Alternative setup; provide the corresponding interrupt handler. */
+RCC_PLL_init();
+TIM_UI_init_us(TIM2, 1000U);
+```
+
+Requests a nominal 1000 us (1 ms) update interval. Choose either this function or TIM_UI_init() for the same timer.
+
+**Notes:** Uses TIM_init_us() to request a 1 MHz counter clock, then enables UIE and the NVIC interrupt at priority 2. It does not guarantee that the first interval uses the new PSC immediately.
+
+<a id="api-tim_ui_enable"></a>
+### `TIM_UI_enable()`
+
+**Purpose:** Clear the existing update flag and enable update-interrupt requests in the timer.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L30) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L54)
+
+**Code structure**
+
+```c
+void TIM_UI_enable(TIM_TypeDef* TIMx){
+	TIMx->SR = ~TIM_SR_UIF;
+	TIMx->DIER |= TIM_DIER_UIE;				
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example is a fragment used after the required clock/timer setup unless it only performs a lookup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+/* After TIM_UI_init(TIM2, 1U) has configured the timer and NVIC. */
+TIM_UI_disable(TIM2);
+TIM_UI_enable(TIM2);
+```
+
+Clears any accumulated UIF and permits new update-interrupt requests again.
+
+**Notes:** Setting DIER.UIE does not itself enable the NVIC IRQ or start a stopped counter. Writing ~TIM_SR_UIF to SR writes zero to UIF and ones to the other status positions; it does not set all other event flags.
+
+<a id="api-tim_ui_disable"></a>
+### `TIM_UI_disable()`
+
+**Purpose:** Disable timer update-interrupt requests without stopping the counter.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L31) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L60)
+
+**Code structure**
+
+```c
+void TIM_UI_disable(TIM_TypeDef* TIMx){
+	TIMx->DIER &= ~(TIM_DIER_UIE);					
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example is a fragment used after the required clock/timer setup unless it only performs a lookup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+/* After timer and interrupt initialization. */
+TIM_UI_disable(TIM2);
+```
+
+Blocks further timer update-interrupt requests while the counter continues running.
+
+**Notes:** Clears DIER.UIE, not CR1.CEN. It does not clear UIF or explicitly cancel an IRQ already pending in the NVIC. Re-enable through TIM_UI_enable() when required.
+
+<a id="api-is_uif"></a>
+### `is_UIF()`
+
+**Purpose:** Read the update-interrupt flag without changing it.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L34) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L64)
+
+**Code structure**
+
+```c
+uint32_t is_UIF(TIM_TypeDef *TIMx){
+	return TIMx->SR & TIM_SR_UIF;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `Return` | `uint32_t` | Output | 1 if SR.UIF is set, otherwise 0; UIF is bit 0 on this MCU. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example is a fragment used after the required clock/timer setup unless it only performs a lookup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+/* Supply this handler when TIM2 update interrupts are enabled. */
+void TIM2_IRQHandler(void)
+{
+    if (is_UIF(TIM2)) {
+        // Process the timer event here.
+        clear_UIF(TIM2);
+    }
+}
+```
+
+Checks whether the handler has an update event to process.
+
+**Notes:** This function does not cause an interrupt, clear the flag, or perform the application's operation. Hardware sets UIF when an enabled update source produces the event.
+
+<a id="api-clear_uif"></a>
+### `clear_UIF()`
+
+**Purpose:** Clear the timer update flag after processing the event.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L35) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L67)
+
+**Code structure**
+
+```c
+void clear_UIF(TIM_TypeDef *TIMx){
+	TIMx->SR &= ~TIM_SR_UIF;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example is a fragment used after the required clock/timer setup unless it only performs a lookup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+/* Fragment inside the corresponding timer interrupt handler. */
+if (is_UIF(TIM2)) {
+    // Complete the required operation.
+    clear_UIF(TIM2);
+}
+```
+
+Acknowledges the update event at the timer by writing zero to UIF.
+
+**Notes:** Timer SR.UIF uses write-zero-to-clear behavior, unlike EXTI.PR's write-one-to-clear behavior. The current &= expression is a read-modify-write; it can also clear another status flag that becomes set between the read and write. The source is documented unchanged.
+
+<a id="api-tim_init"></a>
+### `TIM_init()`
+
+**Purpose:** Enable the timer clock, configure a millisecond period using a target 10 kHz counter clock, select up-counting, and start the counter.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L43) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L81)
+
+**Code structure**
+
+```c
+void TIM_init(TIM_TypeDef* TIMx, uint32_t msec){ 
+// 1. Enable Timer CLOCK
+	TIM_clock_enable(TIMx);
+
+// 2. Set CNT period
+	TIM_period_ms(TIMx, msec); 			
+
+// 3. COUNTER Direction
+	// Up-Counter	
+	TIMx->CR1 &= ~TIM_CR1_DIR;	
+	
+	// Down-Counter
+	//TIMx->CR1 |= TIM_CR1_DIR;
+
+// 4. Enable Timer Counter
+	TIMx->CR1 |= TIM_CR1_CEN;		
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `msec` | `uint32_t` | Input | Positive requested period in milliseconds; keep within the selected timer and integer-arithmetic limits. At 10 kHz, 1–6553 ms fits a 16-bit ARR. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+#include "ecTIM2.h"
+
+RCC_PLL_init();
+TIM_init(TIM2, 1U);
+```
+
+Configures a nominal 1 ms timer period and starts counting; it does not enable update interrupts.
+
+**Notes:** TIM_period_ms() writes PSC and ARR. Clearing DIR selects up-counting on timers that support direction selection; TIM9–TIM11 are up-counters and do not use DIR for this purpose. This function does not explicitly generate UG or reset CNT, and it is not a full reset of a previously configured timer.
+
+<a id="api-tim_init_us"></a>
+### `TIM_init_us()`
+
+**Purpose:** Enable the timer clock, configure a microsecond period using a target 1 MHz counter clock, select up-counting, and start the counter.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L44) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L102)
+
+**Code structure**
+
+```c
+void TIM_init_us(TIM_TypeDef* TIMx, uint32_t usec){ 
+// 1. Enable Timer CLOCK
+	TIM_clock_enable(TIMx);
+// 2. Set CNT period
+	TIM_period_us(TIMx, usec); 
+
+// 3. CNT Direction
+// Up-Counter	
+	TIMx->CR1 &= ~TIM_CR1_DIR;	
+	
+// Down-Counter
+	//TIMx->CR1 |= TIM_CR1_DIR;
+
+// 4. Enable Timer Counter
+	TIMx->CR1 |= TIM_CR1_CEN;		
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `usec` | `uint32_t` | Input | Positive requested period in microseconds; at 1 MHz, 1–65536 us fits a 16-bit ARR. TIM2/TIM5 have a wider ARR, subject to integer limits. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+#include "ecTIM2.h"
+
+RCC_PLL_init();
+TIM_init_us(TIM2, 1000U);
+```
+
+Configures the same nominal 1 ms period as TIM_init(TIM2, 1U), using a finer counter time step.
+
+**Notes:** Does not enable UIE or the NVIC. It shares TIM_init()'s initial-prescaler, existing-mode, and direction-field limitations.
+
+<a id="api-tim_period"></a>
+### `TIM_period()`
+
+**Purpose:** Write PSC and ARR for a millisecond period, using a target counter frequency of 10 kHz.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L47) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L121)
+
+**Code structure**
+
+```c
+void TIM_period(TIM_TypeDef* TIMx, uint32_t msec){
+
+	uint32_t Sys_CLK = EC_SYSCLK;					// 84MHz (PLL) or 16MHz (HSI)
+
+	// Counter Frequency (f_cnt) 
+	uint32_t f_cnt   =  10000UL;					// 16-bit CNT: f_cnt=10kHz (default)
+	
+	// Prescaler Value
+	uint32_t PSCval = Sys_CLK / f_cnt;				// 84MHz -> 10 kHz (PSC=8400)
+	TIMx->PSC = PSCval - 1;
+
+	// Reload Value (ARR) for msec unit
+	uint32_t ARRval = (f_cnt / 1000UL) * msec;		// Reload values needed for msec 	
+	TIMx->ARR = ARRval - 1;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `msec` | `uint32_t` | Input | Positive requested period in milliseconds; keep within the selected timer and integer-arithmetic limits. At 10 kHz, 1–6553 ms fits a 16-bit ARR. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+TIM_clock_enable(TIM2);
+TIM_period(TIM2, 500U);
+```
+
+With an 84 MHz timer input, writes PSC = 8399 and ARR = 4999 for a nominal 500 ms period.
+
+**Notes:** One counter tick is 100 us. This function does not enable the peripheral clock, start the counter, enable interrupts, or force an update. It does not stop a timer that is already running. Zero input underflows ARRval - 1; oversized inputs can overflow arithmetic or exceed ARR width.
+
+<a id="api-tim_period_ms"></a>
+### `TIM_period_ms()`
+
+**Purpose:** Configure a millisecond period with the same calculation as TIM_period().
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L48) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L137)
+
+**Code structure**
+
+```c
+void TIM_period_ms(TIM_TypeDef* TIMx, uint32_t msec){
+
+	uint32_t Sys_CLK = EC_SYSCLK;					// 84MHz (PLL) or 16MHz (HSI)
+
+	// Counter Frequency (f_cnt) 
+	uint32_t f_cnt   =  10000UL;					// 16-bit CNT: f_cnt=10kHz (default)
+	
+	// Prescaler Value
+	uint32_t PSCval = Sys_CLK / f_cnt;				// 84MHz -> 10 kHz (PSC=8400)
+	TIMx->PSC = PSCval - 1;
+
+	// Reload Value (ARR) for msec unit
+	uint32_t ARRval = (f_cnt / 1000UL) * msec;		// Reload values needed for msec 	
+	TIMx->ARR = ARRval - 1;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `msec` | `uint32_t` | Input | Positive requested period in milliseconds; keep within the selected timer and integer-arithmetic limits. At 10 kHz, 1–6553 ms fits a 16-bit ARR. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+TIM_clock_enable(TIM2);
+TIM_period_ms(TIM2, 1U);
+```
+
+With an 84 MHz timer input, writes PSC = 8399 and ARR = 9 for a nominal 1 ms period.
+
+**Notes:** TIM_init() calls this implementation. TIM_period() and TIM_period_ms() currently duplicate the same calculation rather than one calling the other.
+
+<a id="api-tim_period_us"></a>
+### `TIM_period_us()`
+
+**Purpose:** Write PSC and ARR for a microsecond period, using a target counter frequency of 1 MHz.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L49) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L154)
+
+**Code structure**
+
+```c
+void TIM_period_us(TIM_TypeDef* TIMx, uint32_t usec){
+
+	uint32_t Sys_CLK = EC_SYSCLK;					// 84MHz (PLL) or 16MHz (HSI)
+	//uint32_t ARRval=0;
+
+	// Counter Frequency (f_cnt) 
+	uint32_t f_cnt   =  1000000UL;					// 16-bit CNT: f_cnt=1MHz (default)
+	
+	// Prescaler Value
+	uint32_t PSCval = Sys_CLK / f_cnt;				// 84MHz -> 1 MHz (PSC=84)
+	TIMx->PSC = PSCval - 1;
+
+	// Reload Value (ARR) for msec unit
+	uint32_t ARRval = (f_cnt / 1000000UL) * usec;			
+	TIMx->ARR = ARRval - 1;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `usec` | `uint32_t` | Input | Positive requested period in microseconds; at 1 MHz, 1–65536 us fits a 16-bit ARR. TIM2/TIM5 have a wider ARR, subject to integer limits. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+TIM_clock_enable(TIM2);
+TIM_period_us(TIM2, 1000U);
+```
+
+With an 84 MHz timer input, writes PSC = 83 and ARR = 999 for a nominal 1000 us (1 ms) period.
+
+**Notes:** The completed calculation divides by 1000000UL, not 1000UL. At 1 MHz, each count is 1 us, so ARR = usec - 1. The retained source comment saying 'msec unit' is inaccurate. This function only writes period registers and shares the input/update limitations of TIM_period().
+
+<a id="api-tim_clock_enable"></a>
+### `TIM_clock_enable()`
+
+**Purpose:** Enable the RCC peripheral-clock gate for the selected timer.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L53) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L174)
+
+**Code structure**
+
+```c
+void TIM_clock_enable(TIM_TypeDef* TIMx){ 
+	if(TIMx ==TIM1) RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
+	else if(TIMx ==TIM2) RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+	else if(TIMx ==TIM3) RCC->APB1ENR |= RCC_APB1ENR_TIM3EN;
+	else if(TIMx ==TIM4) RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
+	else if(TIMx ==TIM5) RCC->APB1ENR |= RCC_APB1ENR_TIM5EN;
+	else if(TIMx ==TIM9) RCC->APB2ENR |= RCC_APB2ENR_TIM9EN;
+	else if(TIMx ==TIM10) RCC->APB2ENR |= RCC_APB2ENR_TIM10EN;
+	else if(TIMx ==TIM11) RCC->APB2ENR |= RCC_APB2ENR_TIM11EN;	
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example is a fragment used after the required clock/timer setup unless it only performs a lookup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+#include "ecTIM2.h"
+
+TIM_clock_enable(TIM3);
+```
+
+Enables access and clock supply for TIM3 through RCC_APB1ENR_TIM3EN.
+
+**Notes:** TIM2–TIM5 use APB1ENR; TIM1/TIM9–TIM11 use APB2ENR. Clock gating is separate from CR1.CEN, so this function alone does not start counting. An unsupported pointer matches no branch.
+
+<a id="api-get_tim_irqn"></a>
+### `get_TIM_IRQn()`
+
+**Purpose:** Return the external interrupt number associated with the selected timer's update interrupt.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.h#L52) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecTIM2.c#L187)
+
+**Code structure**
+
+```c
+uint32_t get_TIM_IRQn(TIM_TypeDef* TIMx){
+	uint32_t IRQn_reg = 0x00000000;
+	if(TIMx == TIM1)       IRQn_reg = TIM1_UP_TIM10_IRQn;
+	else if(TIMx == TIM2)  IRQn_reg = TIM2_IRQn;
+	else if(TIMx == TIM3)  IRQn_reg = TIM3_IRQn;
+	else if(TIMx == TIM4)  IRQn_reg = TIM4_IRQn;
+	else if(TIMx == TIM5)  IRQn_reg = TIM5_IRQn;
+	else if(TIMx == TIM9)  IRQn_reg = TIM1_BRK_TIM9_IRQn;
+	else if(TIMx == TIM10) IRQn_reg = TIM1_UP_TIM10_IRQn;
+	else if(TIMx == TIM11) IRQn_reg = TIM1_TRG_COM_TIM11_IRQn;
+	return IRQn_reg;	
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Supported timer peripheral: TIM1, TIM2–TIM5, or TIM9–TIM11. Use a valid register pointer. |
+| `Return` | `uint32_t` | Output | Matching IRQ number. Unsupported inputs return the initial value 0; that is not a dedicated error code. |
+
+**Example code**
+
+Include `ecTIM2.h`. The example is a fragment used after the required clock/timer setup unless it only performs a lookup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+#include "ecTIM2.h"
+
+uint32_t timerIRQ = get_TIM_IRQn(TIM3);
+NVIC_SetPriority(timerIRQ, 2U);
+```
+
+Returns TIM3_IRQn so that its NVIC priority can be selected.
+
+**Notes:** Does not enable the timer, UIE, or the NVIC IRQ. TIM1 update and TIM10 share TIM1_UP_TIM10_IRQn; TIM9 and TIM11 also use vectors shared with TIM1 sources. A shared handler must test and clear each enabled source. Never pass an unsupported timer and treat the returned 0 as valid.
+
+<a id="module-pwm"></a>
+## PWM Output — `ecPWM2.h/.c`
+
+**Reviewed:** 2026-11-01 against [`0d7f9f1`](https://github.com/moonbib/EC-STM32F4-22200264/commit/0d7f9f11ce09d7654f47e4f161cb854802165ce6). This section covers all **8 active definitions** in `ecPWM2.c`, in source order, matching the final PreLAB's initialization, duty, pulse-width, mode, and pin-mapping documentation.
+
+Source files: [ecPWM2.h](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h), [ecPWM2.c](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c). Include `ecPWM2.h` and compile it with the TIM/RCC/GPIO/pin-mapping sources. The GPIO pin must be present in the current `PWM_pinmap()` table.
+
+### Period, HIGH duration, and mode
+
+For up-counting, active-high PWM mode 1:
+
+```text
+T_PWM = (PSC + 1) * (ARR + 1) / f_TIM
+Duty_HIGH = CCR / (ARR + 1)
+CNT < CCR: HIGH; CNT >= CCR: LOW
+```
+
+At an 84 MHz timer input, `PWM_init(PA_5, 10U)` selects the 1 MHz counter path (`PSC = 83`, `ARR = 9999`). `PWM_duty(PA_5, 0.2f)` requests `CCR1 = 2000`: a nominal 100 Hz signal with 2 ms HIGH time. These are calculated values, not oscilloscope measurements.
+
+| Header constant | API value | OCxM field value selected by the helper |
+| --- | --- | --- |
+| `EC_PWM_MODE1` | 0 | `0x6` (`110`): active while CNT < CCR |
+| `EC_PWM_MODE2` | 1 | `0x7` (`111`): active while CNT >= CCR |
+
+The API constant and the register field encoding are different values. Both modes are configured with active-high polarity here. `PWM_duty()` and the pulse-width helpers assume mode 1. TIM2 hardware generates the waveform independently; no interrupt is required for each PWM pulse. SysTick is needed only by application delays that use it.
+
+The same timer shares PSC/ARR across its channels. Reinitializing a channel's timer can therefore change another channel's period. PA5 and PA15 are both mapped to TIM2_CH1 and cannot be treated as independent PWM channels.
+
+<a id="api-pwm_init_config"></a>
+### `PWM_init_config()`
+
+**Purpose:** Find the timer/channel for a pin, configure its GPIO alternate function, select the period and PWM mode, apply buffered settings, and start PWM output.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L33) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L20)
+
+**Code structure**
+
+```c
+void PWM_init_config(PinName_t pinName, uint32_t usec){
+// 0. Match TIMx from given Port_y and Pin_x
+	GPIO_TypeDef *port;
+	unsigned int pin;
+	ecPinmap(pinName, &port, &pin);
+	TIM_TypeDef *TIMx;
+	int chN;
+	PWM_pinmap(pinName, &TIMx, &chN);
+
+// 1. Initialize GPIO port and pin as AF
+	GPIO_init(pinName, AF);  
+
+// 2. Configure GPIO AFR by Pin x num.
+	//  AFR[0] holds pin 0~7, AFR[1] holds pin 8~15 : 4 bits per pin
+		uint32_t afrIdx   = pin >> 3;				// same as (pin/8)
+	uint32_t afrShift = 4 * (pin % 8);
+	uint32_t afNum    = 0;
+
+	//  AF1 for TIM1,TIM2     AF2 for TIM3,TIM4
+	if((TIMx == TIM1)||(TIMx == TIM2))		afNum = 1;	// AF1
+	else if(TIMx== TIM3 || TIMx == TIM4)	afNum = 2;	// AF2
+	// You can add more  for TIM5 to TIM11, if necessary [YOUR CODE GOES HERE!!]		
+
+
+	// Set AFR register for the pin
+	port->AFR[afrIdx] &= ~(0xFUL << afrShift);	// 4 bits per pin	
+	port->AFR[afrIdx] |= afNum << afrShift  ; 
+	
+
+// 3. Initialize Timer : select CLK_CNT according to PWM period 
+	//   TIM2/TIM5 			(32-bit ARR) : 1 < usec < 2^32 usec 	-> TIM_init_us() 
+	//   TIM1/TIM3/TIM4    	(16-bit ARR) : 1 < usec <=65,536 usec 	-> TIM_init_us() 
+	//                            			65 < msec <65,536 msec	-> TIM_init() 
+	if((TIMx == TIM2) || (TIMx == TIM5) || (usec <= 65536)){
+		TIM_init_us(TIMx, usec);					
+	}
+	else {
+		uint32_t msec = usec / 1000;
+		if(msec > 6553) msec = 6553;			// 16-bit ARR has limit of 6.5sec
+		TIM_init(TIMx,msec);
+		// [YOUR CODE GOES HERE!!]				// 65 < msec <65,536 msec	-> TIM_init() 	
+	}
+// 4. Configure Timer Output mode as PWM
+	// Default: PWM Mode 1, active high, duty ratio = 50%
+	PWM_mode_config(TIMx, chN, EC_PWM_MODE1);
+
+// 5. Enable Timer Counter
+	// For TIM1 ONLY
+	if(TIMx == TIM1) TIMx->BDTR |= TIM_BDTR_MOE;					// Main output enable (MOE): 0 = Disable, 1 = Enable		
+	// All Timer: First, Clear the counter and Clear UI Flag
+	TIMx->EGR |= TIM_EGR_UG;					
+	TIMx->SR   = ~TIM_SR_UIF;					
+	// Enable timers
+	TIMx->CR1  |= TIM_CR1_CEN;  	
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `pinName` | `PinName_t` | Input | A pin present in the current PWM_pinmap() table. Initialize PWM before changing its duty or pulse width. |
+| `usec` | `uint32_t` | Input | Positive requested PWM period in microseconds. TIM1/TIM3/TIM4 use the microsecond path up to 65536 us, otherwise a truncated millisecond path capped at 6553 ms; TIM2 uses the microsecond path. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+#include "ecPWM2.h"
+
+RCC_PLL_init();
+PWM_init_config(PA_5, 1000U);
+```
+
+Connects PA5 to TIM2_CH1 and requests a 1 ms (1 kHz) active-high PWM mode-1 output, initially approximately 50% duty.
+
+**Notes:** Normally reached through PWM_init() or PWM_init_us(). AF1 is selected for TIM1/TIM2 and AF2 for TIM3/TIM4. The else block is closed before PWM_mode_config(), so output setup executes for both period branches. TIM1 also needs BDTR.MOE. EGR.UG applies settings and restarts the time base; UIF is cleared before CEN is set. UG is an update event, not an instruction to enable interrupts. The TIM5 test is unreachable through the current pin table.
+
+<a id="api-pwm_duty"></a>
+### `PWM_duty()`
+
+**Purpose:** Clamp the requested ratio to 0.0–1.0, calculate CCR = (ARR + 1) × duty, and update the pin's timer channel.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L35) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L78)
+
+**Code structure**
+
+```c
+void PWM_duty(PinName_t pinName, float duty) {
+// 0. Match TIMx from  Port and Pin
+	GPIO_TypeDef *port;
+	unsigned int pin;
+	ecPinmap(pinName, &port, &pin);
+	TIM_TypeDef *TIMx;
+	int chN;
+	PWM_pinmap(pinName, &TIMx, &chN);
+
+// 1. Check the duty ratio range from 0.0 to 1.0
+	if (duty < 0.0f)  // if duty < 0.0f  -> duty = 0.0f;
+		duty = 0.0f;
+
+	if (duty > 1.0f)  // if duty > 1.0f  -> duty = 1.0f;
+		duty = 1.0f;
+
+// 2. Duty ratio -> CCR counts.  Assume PWM mode 1 :
+	uint32_t CCvalue = (uint32_t)((TIMx->ARR + 1)* duty);	// (ARR+1) * duty
+	
+	if(chN == 1)      
+	 TIMx->CCR1 = CCvalue; 	//set channel
+	else if(chN == 2) 
+	 TIMx->CCR2 = CCvalue; 
+	else if(chN == 3)
+	 TIMx->CCR3 = CCvalue;
+	else if(chN == 4)
+	 TIMx->CCR4 = CCvalue;
+	// REPEAT for CHn= 3, 4
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `pinName` | `PinName_t` | Input | A pin present in the current PWM_pinmap() table. Initialize PWM before changing its duty or pulse width. |
+| `duty` | `float` | Input | Requested HIGH ratio for up-counting, active-high PWM mode 1; finite values below 0 or above 1 are clamped. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+PWM_init(PA_5, 10U);
+PWM_duty(PA_5, 0.2f);
+```
+
+Requests a 10 ms period with approximately 2 ms HIGH time (20% duty).
+
+**Notes:** For mode 1, CNT < CCR gives HIGH. Period registers are unchanged. PWM_mode_config() enables CCR preload, so changes take effect on an update event. Integer conversion truncates fractional counts; floating-point rounding can also affect the compare value. The formula assumes mode 1; mode 2 inverts the HIGH interval. At ARR = 0xFFFFFFFF, ARR + 1 overflows, and a full-period CCR cannot be represented. NaN is not validated.
+
+<a id="api-pwm_init"></a>
+### `PWM_init()`
+
+**Purpose:** Accept a period in milliseconds, replace zero with 1 ms, convert to microseconds, and call PWM_init_config().
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L47) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L119)
+
+**Code structure**
+
+```c
+void PWM_init(PinName_t pinName, uint32_t msec){
+	if(msec == 0) msec = 1;		// minimum 1 msec
+	PWM_init_config(pinName, msec * 1000);		
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `pinName` | `PinName_t` | Input | A pin present in the current PWM_pinmap() table. Initialize PWM before changing its duty or pulse width. |
+| `msec` | `uint32_t` | Input | Requested period in milliseconds; zero becomes 1. Keep msec × 1000 within uint32_t and the selected timer's supported range. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+PWM_init(PA_5, 10U);
+```
+
+Requests a 10 ms period, corresponding to 100 Hz, with initial duty approximately 50%.
+
+**Notes:** This wrapper selects units; it does not restrict PWM to frequencies below 1 kHz. Very large periods can overflow the multiplication; narrower timers use the conversion/cap in PWM_init_config().
+
+<a id="api-pwm_init_us"></a>
+### `PWM_init_us()`
+
+**Purpose:** Accept a period in microseconds, clamp it to a minimum of 10 us, and call PWM_init_config().
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L53) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L128)
+
+**Code structure**
+
+```c
+void PWM_init_us(PinName_t pinName, uint32_t usec){	
+	if(usec < 10) usec = 10;  // Minimum 10us (100kHz) 
+	PWM_init_config(pinName, usec);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `pinName` | `PinName_t` | Input | A pin present in the current PWM_pinmap() table. Initialize PWM before changing its duty or pulse width. |
+| `usec` | `uint32_t` | Input | Requested period in microseconds; values below 10 become 10. Other limits depend on the selected timer/path. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+PWM_init_us(PA_5, 1000U);
+```
+
+Requests a 1000 us period (1 kHz). The minimum accepted period of 10 us corresponds to a requested 100 kHz.
+
+**Notes:** This wrapper does not impose a 1 kHz lower frequency limit; longer periods are also passed to the helper. Use either PWM_init() or PWM_init_us() for initialization, not both for the same setup.
+
+<a id="api-pwm_pulsewidth"></a>
+### `PWM_pulsewidth()`
+
+**Purpose:** Convert a requested HIGH duration in milliseconds to counter counts, derive its duty ratio, and call PWM_duty().
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L61) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L141)
+
+**Code structure**
+
+```c
+void PWM_pulsewidth(PinName_t pinName, uint32_t pulse_width_ms){
+// 0. Match TIMx from  Port and Pin 	
+	GPIO_TypeDef *port;
+	unsigned int pin;	
+	ecPinmap(pinName, &port, &pin);	
+	TIM_TypeDef *TIMx;
+	int chN;		
+	PWM_pinmap(pinName, &TIMx, &chN);
+
+	float duty=0.0f;
+	uint32_t f_cnt =0;
+
+	
+// 1. Counter clock : CK_CNT = EC_SYSCLK / (PSC+1)
+	f_cnt = (uint32_t)EC_SYSCLK / (TIMx->PSC + 1);		// [Hz]
+
+// 2. Convert Pulse_width [msec] -> duty ratio (0~1.0) 
+	uint32_t counts = (uint32_t)(((uint64_t)f_cnt * pulse_width_ms) / 1000UL);
+	duty = (float)counts / (float)(TIMx->ARR + 1);
+
+// 3. Set duty ratio
+	PWM_duty(pinName, duty);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `pinName` | `PinName_t` | Input | A pin present in the current PWM_pinmap() table. Initialize PWM before changing its duty or pulse width. |
+| `pulse_width_ms` | `uint32_t` | Input | Requested whole-millisecond HIGH duration. Use the microsecond function for fractional milliseconds. Values above the period are ultimately clamped through PWM_duty(). |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+PWM_init(PA_5, 10U);
+PWM_pulsewidth(PA_5, 2U);
+```
+
+Requests 2 ms HIGH within a 10 ms period, equivalent to 20% duty.
+
+**Notes:** Computes f_cnt = EC_SYSCLK / (PSC + 1), then counts = f_cnt × pulse_width_ms / 1000. The multiplication is promoted to uint64_t before division. The period is not changed. The clock assumption, ARR limits, and mode-1 assumption still apply.
+
+<a id="api-pwm_pulsewidth_us"></a>
+### `PWM_pulsewidth_us()`
+
+**Purpose:** Convert a requested HIGH duration in microseconds to a duty ratio and apply it through PWM_duty().
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L64) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L167)
+
+**Code structure**
+
+```c
+void PWM_pulsewidth_us(PinName_t pinName, uint32_t pulse_width_us){
+// 0. Match TIMx from  Port and Pin 	
+	GPIO_TypeDef *port;
+	unsigned int pin;	
+	ecPinmap(pinName, &port, &pin);	
+	TIM_TypeDef *TIMx;
+	int chN;		
+	PWM_pinmap(pinName, &TIMx, &chN);
+	
+	float duty=0.0f;
+	
+// 1. Counter clock : CK_CNT = EC_SYSCLK / (PSC+1)
+	uint32_t f_cnt = (uint32_t)EC_SYSCLK / (TIMx->PSC + 1);		// [Hz]
+
+// 2. Convert Pulse_width [usec] -> duty ratio (0~1.0) 
+	// Exercise for Students
+	uint32_t counts = (uint32_t)(((uint64_t)f_cnt * pulse_width_us) / 1000000UL);
+	duty = (float)counts / (float)(TIMx->ARR + 1);
+
+// 3. Set duty ratio
+	PWM_duty(pinName, duty);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `pinName` | `PinName_t` | Input | A pin present in the current PWM_pinmap() table. Initialize PWM before changing its duty or pulse width. |
+| `pulse_width_us` | `uint32_t` | Input | Requested HIGH duration in microseconds; initialize PWM first and normally keep the width within its period. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+PWM_init(PA_15, 20U);
+PWM_pulsewidth_us(PA_15, 1500U);
+```
+
+Requests 1500 us HIGH within a 20 ms period, equivalent to 7.5% duty. This describes the waveform, not a verified physical servo angle.
+
+**Notes:** Uses division by 1000000UL for microsecond conversion and a uint64_t product. It is useful for specifying a servo pulse without manually computing duty. The library assumes timer input clock equals EC_SYSCLK.
+
+<a id="api-pwm_mode_config"></a>
+### `PWM_mode_config()`
+
+**Purpose:** Select PWM mode 1 or 2, enable compare preload, set an initial CCR, choose active-high polarity, and enable one timer channel.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L72) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L196)
+
+**Code structure**
+
+```c
+void PWM_mode_config(TIM_TypeDef *TIMx, int chN, uint32_t PWMmode){
+	
+	int mode=0x6; // default value for PWM mode 1
+	if (PWMmode == EC_PWM_MODE2)	mode=0x7;  
+	
+	uint32_t ccVal = TIMx->ARR/2;  // default value  CC=ARR/2
+	if(chN == 1){
+		TIMx->CCMR1 &= ~TIM_CCMR1_OC1M;                     // Clear ouput compare mode bits for channel 1
+		TIMx->CCMR1 |= ((mode << TIM_CCMR1_OC1M_Pos) & TIM_CCMR1_OC1M);   // OCxM = 110 (PWM1) / 111 (PWM2) on ch1
+		TIMx->CCMR1	|= TIM_CCMR1_OC1PE;                     // Output 1 preload enable (make CCR1 value changable)
+		TIMx->CCR1  = ccVal; 								// Output Compare Register for channel 1 (default duty ratio = 50%)		
+		TIMx->CCER &= ~TIM_CCER_CC1P;                       // select output polarity: active high	
+		TIMx->CCER  |= TIM_CCER_CC1E;						// Enable output for ch1
+	}
+	else if(chN == 2){
+		TIMx->CCMR1 &= ~TIM_CCMR1_OC2M;                     // Clear ouput compare mode bits for channel 2
+		TIMx->CCMR1 |= ((mode << TIM_CCMR1_OC2M_Pos) & TIM_CCMR1_OC2M);   // OCxM = 110 (PWM1) / 111 (PWM2) on ch2
+		TIMx->CCMR1	|= TIM_CCMR1_OC2PE;                     // Output 1 preload enable (make CCR1 value changable)	
+		TIMx->CCR2  = ccVal; 								// Output Compare Register for channel 2 (default duty ratio = 50%)		
+		TIMx->CCER &= ~TIM_CCER_CC2P;                       // select output polarity: active high	
+		TIMx->CCER |= TIM_CCER_CC2E;						// Enable output for ch2
+	}
+	else if(chN == 3){
+		TIMx->CCMR2 &= ~TIM_CCMR2_OC3M;                     // Clear ouput compare mode bits for channel 3
+		TIMx->CCMR2 |= ((mode << TIM_CCMR2_OC3M_Pos) & TIM_CCMR2_OC3M);   // OCxM = 110 (PWM1) / 111 (PWM2) on ch3
+		TIMx->CCMR2	|= TIM_CCMR2_OC3PE;                     // Output 1 preload enable (make CCR1 value changable)	
+		TIMx->CCR3  = ccVal; 								// Output Compare Register for channel 3 (default duty ratio = 50%)		
+		TIMx->CCER &= ~TIM_CCER_CC3P;                       // select output polarity: active high	
+		TIMx->CCER  |= TIM_CCER_CC3E;						// Enable output for ch3
+	}
+	else if(chN == 4){
+		TIMx->CCMR2 &= ~TIM_CCMR2_OC4M;                     // Clear ouput compare mode bits for channel 4
+		TIMx->CCMR2 |= ((mode << TIM_CCMR2_OC4M_Pos) & TIM_CCMR2_OC4M);   // OCxM = 110 (PWM1) / 111 (PWM2) on ch4
+		TIMx->CCMR2	|= TIM_CCMR2_OC4PE;                     // Output 1 preload enable (make CCR1 value changable)
+		TIMx->CCR4  = ccVal;			 					// Output Compare Register for channel 4 (default duty ratio = 50%)				
+		TIMx->CCER &= ~TIM_CCER_CC4P;                       // select output polarity: active high	
+		TIMx->CCER  |= TIM_CCER_CC4E;						// Enable output for ch4
+	}	
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `TIMx` | `TIM_TypeDef *` | Input | Initialized timer peripheral associated with the PWM pin. |
+| `chN` | `int` | Input | Channel number 1–4, within the actual selected timer's available channels. |
+| `PWMmode` | `uint32_t` | Input | Use EC_PWM_MODE1 (0) or EC_PWM_MODE2 (1). The header names this parameter mode; the definition names it PWMmode. Any value other than EC_PWM_MODE2 selects mode 1. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example selects the PLL clock before setup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+RCC_PLL_init();
+PWM_init(PA_5, 10U);
+
+/* Internal helper demonstration: reapply mode 1 on TIM2 channel 1. */
+PWM_mode_config(TIM2, 1, EC_PWM_MODE1);
+```
+
+Reconfigures TIM2_CH1 and resets its compare value to ARR / 2, initially approximately 50% duty.
+
+**Notes:** Normally called from PWM_init_config(). The API constants 0/1 are translated into OCxM field values 0x6/0x7. Channels 1–2 use CCMR1; 3–4 use CCMR2. OCxPE synchronizes compare changes to update events; CCxP is cleared and CCxE set. The initial ARR / 2 is not exactly 50% in all cases. This helper alone does not configure the GPIO AF, enable the timer clock/CEN, or enable TIM1 MOE.
+
+<a id="api-pwm_pinmap"></a>
+### `PWM_pinmap()`
+
+**Purpose:** Look up the timer peripheral and channel for a supported GPIO pin and write both results through output pointers.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.h#L74) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include/ecPWM2.c#L238)
+
+**Code structure**
+
+```c
+void PWM_pinmap(PinName_t pinName, TIM_TypeDef **TIMx, int *chN)
+{
+	GPIO_TypeDef *port;
+	unsigned int pin;
+	ecPinmap(pinName, &port, &pin);
+
+  	// Only  TIM1 to TIM4 are defined.
+	// TIM5, 9 to 11 needs to be added, if necessary
+  if(port == GPIOA) {
+      switch(pin){
+         case 0 : *TIMx = TIM2; *chN	= 1; break;
+         case 1 : *TIMx = TIM2; *chN = 2; break;
+         case 5 : *TIMx = TIM2; *chN = 1; break;
+         case 6 : *TIMx = TIM3; *chN = 1; break;
+         //case 7: TIMx = TIM1; *chN = 1N; break;
+         case 8 : *TIMx = TIM1; *chN = 1; break;
+         case 9 : *TIMx = TIM1; *chN = 2; break;
+         case 10: *TIMx = TIM1; *chN = 3; break;
+         case 15: *TIMx = TIM2; *chN = 1; break;
+         default: break;
+      }
+   }
+   else if(port == GPIOB) {
+      switch(pin){
+         //case 0: TIMx = TIM1; *chN = 2N; break;
+         //case 1: TIMx = TIM1; *chN = 3N; break;
+         case 3 : *TIMx = TIM2; *chN = 2; break;
+         case 4 : *TIMx = TIM3; *chN = 1; break;
+         case 5 : *TIMx = TIM3; *chN = 2; break;
+         case 6 : *TIMx = TIM4; *chN = 1; break;
+         case 7 : *TIMx = TIM4; *chN = 2; break;
+         case 8 : *TIMx = TIM4; *chN = 3; break;
+         case 9 : *TIMx = TIM4; *chN = 4; break;
+         case 10: *TIMx = TIM2; *chN = 3; break;
+         default: break;
+      }
+   }
+   else if(port == GPIOC) {
+      switch(pin){
+         case 6 : *TIMx = TIM3; *chN = 1; break;
+         case 7 : *TIMx = TIM3; *chN = 2; break;
+         case 8 : *TIMx = TIM3; *chN = 3; break;
+         case 9 : *TIMx = TIM3; *chN = 4; break;
+         default: break;
+      }
+   }
+	 // TIM5, 9, 11 needs to be added, if used.
+	// [YOUR CODE GOES HERE!!] if necessary
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `pinName` | `PinName_t` | Input | A GPIO pin listed in this implementation's A/B/C lookup table. |
+| `TIMx` | `TIM_TypeDef **` | Output | Non-null address of a timer-pointer variable receiving TIM1, TIM2, TIM3, or TIM4. |
+| `chN` | `int *` | Output | Non-null address of an integer receiving the channel number. |
+| `Return` | `void` | — | No return value; results are written through the two output arguments. |
+
+**Example code**
+
+Include `ecPWM2.h`. The example is a fragment used after the required clock/timer setup unless it only performs a lookup. Examples are independent; handler examples belong in the application source and must not be duplicated in one build.
+
+```c
+TIM_TypeDef *timer = 0;
+int channel = 0;
+PWM_pinmap(PA_5, &timer, &channel);
+// timer == TIM2; channel == 1.
+```
+
+Decodes PA5 as TIM2 channel 1 without configuring hardware.
+
+**Notes:** The current table maps selected pins to TIM1–TIM4 only; TIM5/TIM9–TIM11 and complementary outputs are not implemented. Unsupported pins leave output variables unchanged and return no status. Initialization helpers use uninitialized local outputs, so an unsupported PWM pin can lead to invalid register access. PA5 and PA15 map to the same TIM2_CH1, not independent channels.
+
 ## Preprocessor Helpers Are Not Functions
 
-The following macros also appear in [ecPinNames.h](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecPinNames.h#L12). They are separate from the 43 function definitions counted above.
+The following macros also appear in [ecPinNames.h](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecPinNames.h#L12). They are separate from the 64 documented function definitions counted above.
 
 | Macro | Current expansion intent / limitation |
 |---|---|
@@ -2370,14 +3528,17 @@ Each linked application has its own setup, main loop, and any required interrupt
 | [Button FND counter](../lab/LAB_GPIO_7segment_pb2.c) | The current `% 60` expression counts button presses from 0 to 59; the source description still says 0 to 19. |
 | [EXTI/SysTick counter](../lab/LAB_EXTI.c) | Counts automatically; PA4 toggles pause/resume and PD2 resets and resumes counting. |
 | [Stepper motor](../lab/LAB_Stepper_Motor.c) | Requests full-step clockwise/counterclockwise moves at 14 RPM with pauses; PC13 requests cancellation of the current move. |
+| [Timer interrupt tutorial](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/tutorial/TU_TIM_Interrupt.c) | TIM2 requests nominal 1 ms interrupts; `_count > 1000` toggles LD2 on interrupt 1001, giving nominal 1.001 s toggles and a 2.002 s full ON/OFF cycle after timer settings take effect. |
+| [PWM tutorial](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/tutorial/TU_TIM_PWM.c) | PA5/TIM2_CH1 uses a 10 ms period (100 Hz). `i < 5` cycles 0%, 20%, 40%, 60%, and 80% at one-second holds; it does not reach 100%. The initial 20% setup is replaced by 0% on the first loop iteration. |
 
 The applications illustrate how the library is called; their presence is not a claim of verified hardware results or that every older tutorial builds. In particular, the current [TU_EXTI.c](../tutorial/TU_EXTI.c) calls the unavailable `MCU_init()` and defines another `led_toggle()` while the environment also includes the library definition. These are existing source issues, not documentation fixes.
 
 ## Verification and Maintenance
 
-- The function inventory was checked against every active definition in the reviewed `include/*.c` and `include/*.h` files, excluding comments.
-- Implementation excerpts were compared against the corresponding source functions, allowing whitespace normalization only.
-- All active definitions have purpose, implementation, parameter/return, and usage sections. The empty HSE body is explicitly identified as a stub.
+- The original inventory was checked against active definitions at the original baseline, excluding comments. The Timer/PWM addition separately covers every active definition in the two reviewed `.c` files: 13 Timer and 8 PWM functions. Other newer modules and LAB setup wrappers were not included in this scoped update.
+- Implementation excerpts were compared against the corresponding source functions, allowing whitespace normalization only. New Timer/PWM excerpts are copied directly from the reviewed GitHub source; the report's formatting/comment differences do not replace those source excerpts.
+- All 64 documented definitions have purpose, implementation, parameter/return, and example sections. This statement applies to this README's scoped inventory, not every function currently present in the repository. The empty HSE body is explicitly identified as a stub.
+- The final 22-page PreLAB report's 21 Timer/PWM function bodies were compared with the reviewed GitHub implementations, ignoring comments, whitespace, and redundant parentheses; the function contents matched. The README excerpts themselves preserve the GitHub function text.
 - Source-link paths, function anchors, and code-block fence pairing were checked. These documentation checks do not replace compiler or hardware tests.
 - No firmware file, pin assignment, clock configuration, or interrupt behavior was changed by this documentation update. No board upload or new hardware measurement was performed.
 - When adding a course module or modifying an API, update its reference entry, the index, and the documented source baseline together. Locally present files not yet committed to this repository are outside this snapshot's inventory.
@@ -2385,10 +3546,12 @@ The applications illustrate how the library is called; their presence is not a c
 
 ## References
 
+- [Reviewed Timer/PWM source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include): baseline for the 21 Timer/PWM function entries added on 2026-11-01.
+- [PreLAB: Timer Interrupt & PWM](https://ykkim.gitbook.io/ec/ec-course/lab/prelab-timer-interrupt-and-pwm): Timer and PWM library exercises and application demonstrations.
 - [Original reviewed course source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/b94fc559ceaaea1df8729b2d61367fe464374dae/include): source baseline for the original full-library inventory and sections other than Stepper and EXTI.
 - [Reviewed Stepper source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include): source baseline for the Stepper section updated on 2026-10-29.
 - [Reviewed EXTI source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/eeb4990ee889093dd58dffb7905922460a4e7403/include): source baseline for the EXTI section updated on 2026-10-29.
-- [STM32F411 reference manual, RM0383](https://www.st.com/resource/en/reference_manual/dm00119316.pdf): GPIO register encodings, clock control, and EXTI routing/acknowledgement.
+- [STM32F411 reference manual, RM0383](https://www.st.com/resource/en/reference_manual/dm00119316.pdf): GPIO encodings, clock control, EXTI acknowledgement, timer update events, and PWM register behavior.
 - [Arm CMSIS NVIC documentation](https://arm-software.github.io/CMSIS_5/Core/html/group__NVIC__gr.html): distinction between external IRQ enabling and processor exceptions.
 
 Original course-library attribution is retained in the linked source files and implementation excerpts where present.
