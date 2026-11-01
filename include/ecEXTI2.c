@@ -109,3 +109,5 @@ void digital_counter(void){
 	uint32_t displayCnt = cnt;
     FND_tensdigit(1,0,displayCnt/10, displayCnt%10);
 }
+
+

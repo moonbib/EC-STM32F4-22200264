@@ -17,14 +17,13 @@ Description      : STM42F411 library
 #include "ecGPIO2.h"
 #include "ecEXTI2.h"
 #include "ecSysTick2.h"
-//#include "ecTIM2.h"
-//#include "ecPWM2.h"
+#include "ecTIM2.h"
+#include "ecPWM2.h"
 #include "ecStepper2.h"
 //#include "ecADC2.h"
 #include "ecUART2.h"
 
 
-// + typedef enum 사용해서 define해도 돼!
 //공용으로 사용하겠다 싶은 이름들 선언!
 /*void MCU_init(void){
     // CLOCK PLL 84MHz
