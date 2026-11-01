@@ -3,12 +3,14 @@
 **Author:** Jueon Moon · **Student ID:** 22200264  
 **Full-library documentation review:** 2026-10-17  
 **Stepper documentation review:** 2026-10-29  
+**EXTI documentation review:** 2026-10-29  
 **Original source baseline:** [`b94fc559ceaaea1df8729b2d61367fe464374dae`](https://github.com/moonbib/EC-STM32F4-22200264/commit/b94fc559ceaaea1df8729b2d61367fe464374dae)  
-**Stepper source baseline:** [`f1a3b0ec64acf79dc61563e7dc46ad1421306e72`](https://github.com/moonbib/EC-STM32F4-22200264/commit/f1a3b0ec64acf79dc61563e7dc46ad1421306e72)
+**Stepper source baseline:** [`f1a3b0ec64acf79dc61563e7dc46ad1421306e72`](https://github.com/moonbib/EC-STM32F4-22200264/commit/f1a3b0ec64acf79dc61563e7dc46ad1421306e72)  
+**EXTI source baseline:** [`eeb4990ee889093dd58dffb7905922460a4e7403`](https://github.com/moonbib/EC-STM32F4-22200264/commit/eeb4990ee889093dd58dffb7905922460a4e7403)
 
 ## Scope and Reading Guide
 
-This README documents every active function definition in the course library's `include` directory at the original source baseline above: **43 definitions, including one empty HSE stub**. The Stepper section and its LAB application were rechecked separately on 2026-10-29 against the Stepper source baseline; the remaining modules retain their original review scope. It also identifies the three declared-only Arduino-style functions and the commented-out `MCU_init` draft. Vendor CMSIS functions and application entry points such as `main`, `setup`, and application-specific IRQ handlers are not library APIs; application source examples are linked below.
+This README documents every active function definition in the course library's `include` directory at the original source baseline above: **43 definitions, including one empty HSE stub**. The Stepper and EXTI sections and their LAB applications were rechecked separately on 2026-10-29 against their respective source baselines; the remaining modules retain their original review scope. It also identifies the three declared-only Arduino-style functions and the commented-out `MCU_init` draft. Vendor CMSIS functions and application entry points such as `main`, `setup`, and application-specific IRQ handlers are not library APIs; application source examples are linked below.
 
 Each function entry contains:
 
@@ -1607,9 +1609,11 @@ Expected behavior: leaving the call commented performs no initialization. An act
 
 ## External interrupts and the application counter — `ecEXTI2.h/.c`
 
+**Reviewed:** 2026-10-29 against [`eeb4990`](https://github.com/moonbib/EC-STM32F4-22200264/commit/eeb4990ee889093dd58dffb7905922460a4e7403). The implementations below use local `Port` and `pin` variables populated by `ecPinmap()`. The [LAB setup](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/lab/LAB_EXTI.c#L21) configures SW2 on PA4 with priority 10 and SW1 on PD2 with priority 9; its handlers pause/resume or reset/restart the counter.
+
 The EXTI functions configure and acknowledge GPIO-triggered interrupt requests. They do not replace the application's interrupt handlers. The separately included `digital_counter()` is application-specific: it shares counter state with the LAB interrupt handlers and refreshes a two-digit FND.
 
-Trigger constants in [ecEXTI2.h:14](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L14) are `FALL = 0`, `RISE = 1`, and `BOTH = 2`. Pins with the same numeric index share one EXTI line: configuring PA4 and then PB4 changes the source of EXTI4 rather than creating two independent lines. Pin indices 0–4 have separate IRQs; 5–9 and 10–15 use grouped IRQs.
+Trigger constants in [ecEXTI2.h:14](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L14) are `FALL = 0`, `RISE = 1`, and `BOTH = 2`. Pins with the same numeric index share one EXTI line: configuring PA4 and then PB4 changes the source of EXTI4 rather than creating two independent lines. Pin indices 0–4 have separate IRQs; 5–9 and 10–15 use grouped IRQs.
 
 The examples below are usage fragments, not additional library definitions. GPIO initialization and a matching handler must be in place before an interrupt can safely be used. Do not combine multiple example definitions of the same handler.
 
@@ -1620,14 +1624,15 @@ The examples below are usage fragments, not additional library definitions. GPIO
 
 Connects a GPIO pin to its EXTI line, enables the requested trigger edge, unmasks the line, and sets/enables its NVIC interrupt. The register group is selected by `pin / 4`; each pin's four-bit port field starts at `4 * (pin % 4)`.
 
-Declaration: [ecEXTI2.h:26](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L26). Definition: [ecEXTI2.c:13](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L13).
+Declaration: [ecEXTI2.h:26](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L26). Definition: [ecEXTI2.c:13](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L13).
 
 **Code structure**
 
 ```c
 void EXTI_init(PinName_t pinName, uint32_t trig_type,uint32_t priority){
-	Pinmap getP = getPinmap(pinName);
-
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
 	// Enable EXTI Clock with SYSCFG controller clock 	
 	RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;		
 	
@@ -1637,31 +1642,31 @@ void EXTI_init(PinName_t pinName, uint32_t trig_type,uint32_t priority){
 	// Pin 8~11: EXTICR3 // EXTICR[2]
 	// Pin 12~15: EXTICR4 // EXTICR[3]	
 	uint32_t EXTICR_port=0;
-	if		(getP.Port == GPIOA) EXTICR_port = 0;
-	else if	(getP.Port == GPIOB) EXTICR_port = 1;
-	else if	(getP.Port == GPIOC) EXTICR_port = 2;
-	else if	(getP.Port == GPIOD) EXTICR_port = 3;
+	if		(Port == GPIOA) EXTICR_port = 0;
+	else if	(Port == GPIOB) EXTICR_port = 1;
+	else if	(Port == GPIOC) EXTICR_port = 2;
+	else if	(Port == GPIOD) EXTICR_port = 3;
 	else					EXTICR_port = 4;
 	
-	SYSCFG->EXTICR[getP.pin/4] &= ~(0xFUL << 4*(getP.pin%4));			// clear 4 bits
-	SYSCFG->EXTICR[getP.pin/4] |= EXTICR_port << 4*(getP.pin%4);			// Set 4 bits
+	SYSCFG->EXTICR[pin/4] &= ~(0xFUL << 4*(pin%4));			// clear 4 bits
+	SYSCFG->EXTICR[pin/4] |= EXTICR_port << 4*(pin%4);			// Set 4 bits
 	
 	// Select  Trigger edge (RISE, FALL, BOTH)
-	if (trig_type == FALL) 		EXTI->FTSR |= 1UL << getP.pin;  // Falling trigger enable 
-	else if	(trig_type == RISE) EXTI->RTSR |= 1UL << getP.pin;   // Rising trigger enable 
+	if (trig_type == FALL) 		EXTI->FTSR |= 1UL << pin;  // Falling trigger enable 
+	else if	(trig_type == RISE) EXTI->RTSR |= 1UL << pin;   // Rising trigger enable 
 	else if	(trig_type == BOTH) {			// Both falling/rising trigger enable
-		EXTI->RTSR |= 1UL << getP.pin; 
-		EXTI->FTSR |= 1UL << getP.pin;
+		EXTI->RTSR |= 1UL << pin; 
+		EXTI->FTSR |= 1UL << pin;
 	} 
 	
 	// Enable EXTI, with Not-Masked Interrupt Request 
 	// Not-mask (==Enable) EXTIx
- 	EXTI->IMR |= 1UL << getP.pin;
+ 	EXTI->IMR |= 1UL << pin;
 	
 	// NVIC(IRQ) Setting
 	uint32_t EXTI_IRQn = 0;
-	if (getP.pin < 5) 		EXTI_IRQn = EXTI0_IRQn + getP.pin;
-	else if	(getP.pin < 10) 	EXTI_IRQn = EXTI9_5_IRQn;
+	if (pin < 5) 		EXTI_IRQn = EXTI0_IRQn + pin;
+	else if	(pin < 10) 	EXTI_IRQn = EXTI9_5_IRQn;
 	else 				EXTI_IRQn = EXTI15_10_IRQn;
 		
 	NVIC_SetPriority(EXTI_IRQn, priority);	
@@ -1678,7 +1683,7 @@ void EXTI_init(PinName_t pinName, uint32_t trig_type,uint32_t priority){
 | `priority` | `uint32_t` | Input | NVIC priority; use 0–15 for STM32F411. Smaller numerical values have higher urgency; preemption also depends on priority grouping. |
 | Return | `void` | Return | No return value or error indication. |
 
-**Usage example**
+**Example code**
 
 Use during setup, with a matching `EXTI4_IRQHandler()` defined in the application. This example requests an interrupt on PA4's HIGH-to-LOW transition.
 
@@ -1707,14 +1712,16 @@ EXTI_init(PA_4, FALL, 10);
 
 Sets the selected EXTI interrupt-mask bit to allow interrupt requests from that line.
 
-Declaration: [ecEXTI2.h:27](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L27). Definition: [ecEXTI2.c:57](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L57).
+Declaration: [ecEXTI2.h:27](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L27). Definition: [ecEXTI2.c:58](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L58).
 
 **Code structure**
 
 ```c
 void EXTI_enable(PinName_t pinName) {
-	Pinmap getP = getPinmap(pinName);
-	EXTI->IMR |= 1UL << getP.pin;     // not masked (i.e., Interrupt enabled)
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
+	EXTI->IMR |= 1UL << pin;     // not masked (i.e., Interrupt enabled)
 }
 ```
 
@@ -1725,7 +1732,7 @@ void EXTI_enable(PinName_t pinName) {
 | `pinName` | `PinName_t` | Input | A valid pin whose EXTI line has already been configured. Only the decoded pin index selects the mask bit. |
 | Return | `void` | Return | No return value. |
 
-**Usage example**
+**Example code**
 
 Call after `EXTI_init()` has configured the source and NVIC. The example allows EXTI4 requests again after masking.
 
@@ -1747,14 +1754,16 @@ EXTI_enable(PA_4);
 
 Clears the selected EXTI interrupt-mask bit to mask interrupt requests from that line.
 
-Declaration: [ecEXTI2.h:28](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L28). Definition: [ecEXTI2.c:62](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L62).
+Declaration: [ecEXTI2.h:28](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L28). Definition: [ecEXTI2.c:65](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L65).
 
 **Code structure**
 
 ```c
 void EXTI_disable(PinName_t pinName) {
-	Pinmap getP = getPinmap(pinName);
-	EXTI->IMR &= ~(1UL << getP.pin);     // masked (i.e., Interrupt disabled)
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
+	EXTI->IMR &= ~(1UL << pin);     // masked (i.e., Interrupt disabled)
 }
 ```
 
@@ -1765,7 +1774,7 @@ void EXTI_disable(PinName_t pinName) {
 | `pinName` | `PinName_t` | Input | A valid pin; its decoded index identifies the EXTI line to mask. |
 | Return | `void` | Return | No return value. |
 
-**Usage example**
+**Example code**
 
 Use when the application needs to mask an already configured line. The example masks EXTI4, not all external interrupts.
 
@@ -1787,15 +1796,17 @@ EXTI_disable(PA_4);
 
 Reads the selected EXTI pending bit and normalizes it to 0 or 1.
 
-Declaration: [ecEXTI2.h:29](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L29). Definition: [ecEXTI2.c:67](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L67).
+Declaration: [ecEXTI2.h:29](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L29). Definition: [ecEXTI2.c:72](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L72).
 
 **Code structure**
 
 ```c
 uint32_t is_pending_EXTI(PinName_t pinName) {
-	Pinmap getP = getPinmap(pinName);
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
 	uint32_t EXTI_PRx =  EXTI->PR;     // read PRx, EXTI pending bit.  Use  (REG>>k & 1) to read.
-	return  (EXTI_PRx >> getP.pin) & 1UL; 	// Return only 0 or 1
+	return  (EXTI_PRx >> pin) & 1UL; 	// Return only 0 or 1
 }
 ```
 
@@ -1806,7 +1817,7 @@ uint32_t is_pending_EXTI(PinName_t pinName) {
 | `pinName` | `PinName_t` | Input | A valid pin; the decoded index selects the pending bit. |
 | Return | `uint32_t` | Return | `1` when that EXTI line is pending; otherwise `0`. |
 
-**Usage example**
+**Example code**
 
 Include `ecEXTI2.h` and configure PA4 before enabling its IRQ. This minimal example acknowledges EXTI4 without adding an application action.
 
@@ -1832,16 +1843,18 @@ void EXTI4_IRQHandler(void) {
 
 Acknowledges one EXTI pending flag by writing a 1 to its write-one-to-clear bit.
 
-Declaration: [ecEXTI2.h:30](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L30). Definition: [ecEXTI2.c:73](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L73).
+Declaration: [ecEXTI2.h:30](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L30). Definition: [ecEXTI2.c:80](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L80).
 
 **Code structure**
 
 ```c
 void clear_pending_EXTI(PinName_t pinName){
 	// Port, Pin Configuration
-	Pinmap getP = getPinmap(pinName);
+	GPIO_TypeDef *Port;
+	unsigned int pin;
+	ecPinmap(pinName, &Port, &pin);
 	// clear by writing 1 to the pending bit
-	EXTI->PR  = (1UL << getP.pin);     
+	EXTI->PR  = (1UL << pin);     
 }
 ```
 
@@ -1852,7 +1865,7 @@ void clear_pending_EXTI(PinName_t pinName){
 | `pinName` | `PinName_t` | Input | A valid pin whose EXTI pending bit is to be acknowledged. |
 | Return | `void` | Return | No return value. |
 
-**Usage example**
+**Example code**
 
 Include `ecEXTI2.h`. The example clears EXTI4's pending indication; it does not change the button's electrical state.
 
@@ -1876,7 +1889,7 @@ if (is_pending_EXTI(PA_4)) {
 
 Combines GPIO input initialization, pull-resistor configuration, and EXTI setup into one call.
 
-Declaration: [ecEXTI2.h:31](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L31). Definition: [ecEXTI2.c:80](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L80).
+Declaration: [ecEXTI2.h:31](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L31). Definition: [ecEXTI2.c:89](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L89).
 
 **Code structure**
 
@@ -1898,7 +1911,7 @@ void EXTI_input_initialize(PinName_t pinName, uint32_t pupd, uint32_t trig_type,
 | `priority` | `uint32_t` | Input | NVIC priority, normally 0–15 on STM32F411. |
 | Return | `void` | Return | No return value. |
 
-**Usage example**
+**Example code**
 
 Use with active-low button wiring. The example sets both inputs to pull-up and enables their falling-edge interrupt requests.
 
@@ -1919,7 +1932,7 @@ EXTI_input_initialize(PD_2, EC_PU, FALL, 9);
 
 ### Shared counter state
 
-Declarations are in [ecEXTI2.h:18](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L18); the single definitions are in [ecEXTI2.c:86](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L86).
+Declarations are in [ecEXTI2.h:18](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L18); the single definitions are in [ecEXTI2.c:95](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L95).
 
 | Variable | Type | Initial value | Role |
 | --- | --- | --- | --- |
@@ -1937,7 +1950,7 @@ Use the existing `extern` declarations; do not define these globals again in a h
 
 Advances the shared counter once when at least 1000 SysTick milliseconds have elapsed and counting is enabled, then refreshes two FND positions. Values wrap from 59 to 00.
 
-Declaration: [ecEXTI2.h:32](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.h#L32). Definition: [ecEXTI2.c:90](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecEXTI2.c#L90).
+Declaration: [ecEXTI2.h:32](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.h#L32). Definition: [ecEXTI2.c:99](https://github.com/moonbib/EC-STM32F4-22200264/blob/eeb4990ee889093dd58dffb7905922460a4e7403/include/ecEXTI2.c#L99).
 
 **Code structure**
 
@@ -1964,7 +1977,7 @@ void digital_counter(void){
 | None | `void` parameter list | Input | No explicit arguments; uses the shared state listed above and initialized FND arrays. |
 | Return | `void` | Return | No return value; updates `cnt`/`lastTick` and the FND GPIO outputs. |
 
-**Usage example**
+**Example code**
 
 This standalone application example initializes the clock, millisecond tick and both FND arrays before repeatedly updating the display. It shows automatic counting only; button control additionally requires EXTI configuration and handlers. Compile it as one application, not alongside another `main()`.
 
@@ -1977,7 +1990,7 @@ PinName_t counterSegments[8] = {
 PinName_t counterDigits[4] = {PA_10, PA_11, PC_4, PC_3};
 
 int main(void) {
-    RCC_HSI_init();
+    RCC_PLL_init();  // 84 MHz, matching the LAB configuration.
     SysTick_init();
     FND_init(counterSegments);
     FND_select_init(counterDigits);
@@ -2372,8 +2385,9 @@ The applications illustrate how the library is called; their presence is not a c
 
 ## References
 
-- [Original reviewed course source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/b94fc559ceaaea1df8729b2d61367fe464374dae/include): source baseline for the original full-library inventory and sections other than Stepper.
+- [Original reviewed course source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/b94fc559ceaaea1df8729b2d61367fe464374dae/include): source baseline for the original full-library inventory and sections other than Stepper and EXTI.
 - [Reviewed Stepper source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include): source baseline for the Stepper section updated on 2026-10-29.
+- [Reviewed EXTI source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/eeb4990ee889093dd58dffb7905922460a4e7403/include): source baseline for the EXTI section updated on 2026-10-29.
 - [STM32F411 reference manual, RM0383](https://www.st.com/resource/en/reference_manual/dm00119316.pdf): GPIO register encodings, clock control, and EXTI routing/acknowledgement.
 - [Arm CMSIS NVIC documentation](https://arm-software.github.io/CMSIS_5/Core/html/group__NVIC__gr.html): distinction between external IRQ enabling and processor exceptions.
 
