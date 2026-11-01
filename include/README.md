@@ -4,15 +4,17 @@
 **Full-library documentation review:** 2026-10-17  
 **Stepper documentation review:** 2026-10-29  
 **EXTI documentation review:** 2026-10-29  
+**USART documentation review:** 2026-11-01  
 **Timer/PWM documentation review:** 2026-11-01  
 **Original source baseline:** [`b94fc559ceaaea1df8729b2d61367fe464374dae`](https://github.com/moonbib/EC-STM32F4-22200264/commit/b94fc559ceaaea1df8729b2d61367fe464374dae)  
 **Stepper source baseline:** [`f1a3b0ec64acf79dc61563e7dc46ad1421306e72`](https://github.com/moonbib/EC-STM32F4-22200264/commit/f1a3b0ec64acf79dc61563e7dc46ad1421306e72)  
 **EXTI source baseline:** [`eeb4990ee889093dd58dffb7905922460a4e7403`](https://github.com/moonbib/EC-STM32F4-22200264/commit/eeb4990ee889093dd58dffb7905922460a4e7403)  
+**USART source baseline:** [`cde23f64d839e655de19d9dbd5fa3624c3d2b3dd`](https://github.com/moonbib/EC-STM32F4-22200264/commit/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd)  
 **Timer/PWM source baseline:** [`0d7f9f11ce09d7654f47e4f161cb854802165ce6`](https://github.com/moonbib/EC-STM32F4-22200264/commit/0d7f9f11ce09d7654f47e4f161cb854802165ce6)
 
 ## Scope and Reading Guide
 
-This README preserves the original full-library review of **43 active definitions, including one empty HSE stub**, at the original source baseline above. The Stepper and EXTI sections and their LAB applications were rechecked separately on 2026-10-29. On 2026-11-01, **13 Timer functions and 8 PWM functions** were added from the final PreLAB Timer Interrupt & PWM report and checked against their GitHub `.c` and `.h` files, bringing the documented module inventory to **64 definitions across eight modules**. The other modules retain their earlier review scope; this is not a claim that every function subsequently added to the repository, including UART control and LAB setup wrappers, has been re-audited or documented here. The original declared-only Arduino-style functions and commented-out `MCU_init` draft remain identified at their pinned baseline. Vendor CMSIS functions and application entry points such as `main`, `setup`, and application-specific IRQ handlers are not counted as library APIs; application examples are linked below.
+This README preserves the original review of **43 definitions, including one empty HSE stub**, at its source baseline. Stepper and EXTI were rechecked separately on 2026-10-29. Timer/PWM added **21 definitions** on 2026-11-01. The USART update on 2026-11-01 adds **27 source-level definitions from ecUART2.c plus the LAB_USART_init() header wrapper**, using the final USART report and the separately pinned GitHub source. The inventory therefore contains **92 definition entries across nine modules**, including mutually exclusive Arm/GCC standard-I/O hooks; these are documentation entries, not 92 functions compiled in every build. The declared but commented-out UART_control_task() is documented as unavailable and is not counted as an active definition. Other modules retain their earlier review scope, and other newer LAB wrappers have not been re-audited here. Vendor CMSIS functions and application entry points such as main, setup, and application-specific IRQ handlers are not counted as library APIs. Source/report mismatches and application examples are identified below.
 
 Each function entry contains:
 
@@ -33,13 +35,16 @@ Declaration and definition links are pinned to each section's reviewed source ba
 | [SysTick](./ecSysTick2.c) | 6 | [`SysTick_init()`](#api-systick_init), [`SysTick_Handler()`](#api-systick_handler), [`SysTick_counter()`](#api-systick_counter), [`delay_ms()`](#api-delay_ms), [`SysTick_reset()`](#api-systick_reset), [`SysTick_val()`](#api-systick_val) |
 | [External interrupts and counter](./ecEXTI2.c) | 7 | [`EXTI_init()`](#api-exti_init), [`EXTI_enable()`](#api-exti_enable), [`EXTI_disable()`](#api-exti_disable), [`is_pending_EXTI()`](#api-is_pending_exti), [`clear_pending_EXTI()`](#api-clear_pending_exti), [`EXTI_input_initialize()`](#api-exti_input_initialize), [`digital_counter()`](#api-digital_counter) |
 | [Stepper motor](./ecStepper2.c) | 5 | [`stepper_init()`](#api-stepper_init), [`stepper_speed()`](#api-stepper_speed), [`stepper_step()`](#api-stepper_step), [`stepper_out()`](#api-stepper_out), [`stepper_stop()`](#api-stepper_stop) |
+| [USART, USB serial, and Bluetooth](./ecUART2.c) | 28* | [`fputc()`](#api-fputc), [`fgetc()`](#api-fgetc), [`_write()`](#api-_write), [`_read()`](#api-_read), [`USART_init()`](#api-usart_init), [`USART_baud()`](#api-usart_baud), [`USART_pins()`](#api-usart_pins), [`USART1_baud()`](#api-usart1_baud), [`USART2_baud()`](#api-usart2_baud), [`USART1_init()`](#api-usart1_init), [`USART2_init()`](#api-usart2_init), [`USART1_write()`](#api-usart1_write), [`USART2_write()`](#api-usart2_write), [`USART1_read()`](#api-usart1_read), [`USART2_read()`](#api-usart2_read), [`is_USART1_RXNE()`](#api-is_usart1_rxne), [`is_USART2_RXNE()`](#api-is_usart2_rxne), [`USART_clock_enable()`](#api-usart_clock_enable), [`USART_write()`](#api-usart_write), [`USART_read()`](#api-usart_read), [`is_USART_RXNE()`](#api-is_usart_rxne), [`USART_delay()`](#api-usart_delay), [`terminal_write()`](#api-terminal_write), [`receive_byte()`](#api-receive_byte), [`receive_irq()`](#api-receive_irq), [`UART_control_init()`](#api-uart_control_init), [`UART_middle_c()`](#api-uart_middle_c), [`UART_control_task()`](#api-uart_control_task), [`LAB_USART_init()`](#api-lab_usart_init) |
 | [Timer counter and update interrupts](./ecTIM2.c) | 13 | [`TIM_UI_init()`](#api-tim_ui_init), [`TIM_UI_init_us()`](#api-tim_ui_init_us), [`TIM_UI_enable()`](#api-tim_ui_enable), [`TIM_UI_disable()`](#api-tim_ui_disable), [`is_UIF()`](#api-is_uif), [`clear_UIF()`](#api-clear_uif), [`TIM_init()`](#api-tim_init), [`TIM_init_us()`](#api-tim_init_us), [`TIM_period()`](#api-tim_period), [`TIM_period_ms()`](#api-tim_period_ms), [`TIM_period_us()`](#api-tim_period_us), [`TIM_clock_enable()`](#api-tim_clock_enable), [`get_TIM_IRQn()`](#api-get_tim_irqn) |
 | [PWM output](./ecPWM2.c) | 8 | [`PWM_init_config()`](#api-pwm_init_config), [`PWM_duty()`](#api-pwm_duty), [`PWM_init()`](#api-pwm_init), [`PWM_init_us()`](#api-pwm_init_us), [`PWM_pulsewidth()`](#api-pwm_pulsewidth), [`PWM_pulsewidth_us()`](#api-pwm_pulsewidth_us), [`PWM_mode_config()`](#api-pwm_mode_config), [`PWM_pinmap()`](#api-pwm_pinmap) |
+
+**USART count:** 27 definitions in `ecUART2.c` (including two alternative pairs of toolchain hooks) plus one `static inline` setup wrapper. A GCC branch selects 26 of these module definitions before unused-code removal. `UART_control_task()` has only a declaration and commented body at this baseline, so its reference entry is not included in the count.
 
 ## Using This Library
 
 - Include the appropriate `.h` file for declarations and compile the matching `.c` files exactly once. Including a header alone does not link an implementation.
-- `ecSTM32F4v2.h` collects course headers. At the Timer/PWM baseline it includes `ecTIM2.h` and `ecPWM2.h`, and contains LAB setup wrappers; those newer wrappers are outside this update's scope. `MCU_init()` remains a commented draft. The System Header section below documents the older pinned draft.
+- `ecSTM32F4v2.h` collects course headers. At the Timer/PWM baseline it includes `ecTIM2.h` and `ecPWM2.h`, and contains LAB setup wrappers; this update documents `LAB_USART_init()` while the other newer wrappers remain outside its scope. `MCU_init()` remains a commented draft. The System Header section below documents the older pinned draft.
 - Choose the system clock before initializing SysTick. GPIO register access requires the corresponding peripheral clock.
 - Function-level examples are independent snippets for an STM32F411 application, not standalone desktop C programs or instructions to combine every example into one `main()`.
 - Supply valid pins, array lengths, and state indices. Most functions do not validate arguments or report errors.
@@ -61,6 +66,8 @@ Declaration and definition links are pinned to each section's reviewed source ba
 | Timer periods | TIM initialization does not force a PSC update or reset all existing timer settings. | The first interval can differ from the steady-state period; use valid positive periods and verify the clock assumption. |
 | PWM mapping | Only selected pins on TIM1–TIM4 are mapped; unsupported pins have no error return. | Use the listed pins; do not infer support from generic TIM5 branches. |
 | Tutorial boundaries | Timer tutorial uses `_count > 1000`; PWM tutorial uses `i < 5`. | Nominal LED toggles are 1001 ms apart, and the PWM sweep ends at 80%, not 100%. |
+| USART report task | `UART_control_task()` is declared but its definition is commented out; the active exam task is `UART_middle_c()`. | The current Bluetooth application has no active task definition to link; the report version is labeled separately. |
+| USART clock and input | Baud calculation assumes APB1 = SYSCLK/2 and APB2 = SYSCLK; GCC `_read()` does not fill its buffer. | Check the bus setup and use the direct receive APIs rather than relying on this input hook. |
 
 The detailed entries below explain these conditions without silently repairing the source.
 
@@ -2351,6 +2358,1752 @@ void EXTI15_10_IRQHandler(void) {
 - The current `delay_ms()` can still complete before `stepper_step()` returns. The internal FSM state is not reset.
 - Calling before initialization would use the zero-initialized pin array rather than a valid motor mapping; this function has no initialization guard.
 
+<a id="module-usart"></a>
+## USART, USB Serial, and Bluetooth Control — `ecUART2.h/.c`
+
+**Reviewed:** 2026-11-01 against [`cde23f6`](https://github.com/moonbib/EC-STM32F4-22200264/commit/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd), using the final LAB USART report dated 2026-10-25 as the report reference. This module is placed before TIM/PWM in the course sequence.
+
+Source files: [ecUART2.h](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h), [ecUART2.c](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c). The section covers all **27 source-level definition entries**: 18 USART APIs, five controller/helper functions, and four toolchain-specific standard-I/O hooks. Only two of the four I/O hooks are compiled in a given supported toolchain branch, so a GCC build selects 25 of these definitions before linker removal of unused functions. The additional `LAB_USART_init()` definition in `ecSTM32F4v2.h` is also documented, giving **28 definition entries for this module**, of which 26 are selected in a GCC build. The declared but commented-out `UART_control_task()` is documented separately and is not an active definition.
+
+### Report and current source differences
+
+| Item | Report | Reviewed GitHub source |
+| --- | --- | --- |
+| `UART_control_task()` | Active H/L/J/K/P controller. | Declared in the header, but its complete definition is commented out. Calling it from the Bluetooth LAB has no active implementation to link. |
+| `UART_control_init()` prompt | H/L LED and J/K movement instructions. | Startup prompt says C/B movement, matching the later exam command names. |
+| Active application task | Main calls `UART_control_task()`. | `UART_middle_c()` is active, uses C/B plus sensor/FND logic, and is not a drop-in implementation of the report task. |
+| GCC input hook | Not described in the report. | `_read()` returns one byte value without filling its output buffer. |
+| Tutorial test-run section | Prose describes a USART2 line-number test. | The code shown in that report section sends `Hi_BT\\r\\n` through USART1 instead. Do not use that prose to infer the test program's behavior. |
+
+The README preserves and labels these differences; it does not restore firmware, change command strings, or claim that the current Bluetooth LAB links successfully. The core USART setup/transmission/reception in the report follows the current source logic, with formatting, optional braces, and equivalent arithmetic spelling differences. The current source is the authority for the implementation excerpts below.
+
+### Configuration and communication path
+
+| Item | Configuration / meaning |
+| --- | --- |
+| USART1 | PA9 TX / PA10 RX, AF7, APB2; used for HC-06 or the other MCU. |
+| USART2 | PA2 TX / PA3 RX, AF7, APB1; board ST-Link bridges it to the PC virtual COM port. |
+| USART6 | General API uses AF8/APB2; the caller must choose valid pins from the MCU's actual AF mapping. No numbered USART6 init/read/write wrappers are provided here. |
+| Default frame | Asynchronous 8 data bits, no parity, 1 stop bit, 16× oversampling; default numbered initializers use 9600 baud. |
+| Receive path | Hardware sets RXNE; RXNEIE plus the matching enabled NVIC IRQ enters the application handler, which reads/stores data. |
+| Transmit path | `USART_write()` polls TXE/TC and writes DR; no TX interrupt service is implemented by this library. |
+| `printf()` | Standard-output hook targets USART2 only. `terminal_write()` explicitly transmits to USART1 and USART2. |
+| Baud constants | 9600, 19200, 38400, 57600, 115200, and 921600 are supplied as constants, not guarantees of accuracy at every peripheral clock. |
+| `POL` / `INT` | Macros 0 and 1; the shown APIs do not take a mode argument that switches between them. |
+
+Both ends must use compatible framing and baud rates. Pin/AF selection does not pair Bluetooth devices or provide an RS-232/RS-485 electrical transceiver. The code uses MCU USART GPIO signals; the hardware interface must match the connected device.
+
+### Baud calculation and flags
+
+The course PLL setup supplies 84 MHz to APB2 and 42 MHz to APB1. Unlike a timer, the USART baud clock does not receive the timer-specific APB ×2 multiplier. The source assumes these bus ratios instead of reading the RCC prescaler fields.
+
+```text
+USARTDIV = f_PCLK / (16 * baud)
+BRR = (mantissa << 4) | fractional_sixteenths
+USART1 at 9600: USARTDIV = 546.875 → BRR = 0x222E
+USART2 at 9600: USARTDIV = 273.4375 → BRR = 0x1117
+USART2 at 57600: rounded BRR = 729 = 0x02D9
+```
+
+The 57600 setting has divider rounding; its resulting nominal rate is approximately 57613.17 baud at 42 MHz. `USART_baud()` assumes OVER8 = 0, as established by the initialization functions. A different APB setup requires a different clock calculation.
+
+- **TXE:** cleared by writing DR and set when the transmit holding data moves into the shift register; it permits the next byte to be written while the current frame may still be on the wire.
+- **TC:** set when the frame has finished and no next transmit data remains; the transmitter waits for it after the buffer.
+- **RXNE:** set when a received byte becomes available in DR and cleared by reading DR. Checking status alone does not consume data.
+
+### Controller state and command flow
+
+The current file uses a 64-slot receive ring (`rxBuffer` and `rxSource`), with one unused slot giving capacity for 63 ordinary bytes. `rxHead` is advanced by serialized receive handlers and `rxTail` by the main task. Separate flags preserve STOP, report overflow and UART errors, and record the input source. `controlLED`, `steps`, `remainingSteps`, and `direction` store main-context control state. `volatile` does not itself make a multi-operation sequence atomic; main saves/restores PRIMASK around shared-state transfers. The LAB sets both RX IRQs to priority 1 to prevent their shared queue updates from preempting each other.
+
+```text
+USART1/2 receive IRQ → receive_irq() → receive_byte() → shared state
+main task → consume command → LED/motor operation → terminal_write()
+```
+
+For the report task, a J/K command requests `totalSteps` in its chosen direction; the number of revolutions is determined by the stepper mode and step count, not by UART itself. Physical stop is not instantaneous: a running polling write or one motor-step delay can complete before the main task processes P.
+
+<a id="api-fputc"></a>
+### `fputc()`
+
+**Purpose:** Retarget one standard-output character to USART2 when building with the Arm compiler branch.
+
+**Build status:** Arm compiler branch only; not compiled in the GCC branch.
+
+No public declaration in `ecUART2.h` (runtime hook or static helper) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L26)
+
+**Code structure**
+
+```c
+int fputc(int ch, FILE* f)
+{
+    uint8_t c = (uint8_t)ch & 0xFF;
+    USART_write(USART2, &c, 1);
+
+    return ch;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `ch` | `int` | Input | Character to transmit; only the low 8 bits are sent. |
+| `f` | `FILE *` | Input | Standard stream argument; ignored by this implementation. |
+| `Return` | `int` | Output | Returns ch. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Arm compiler branch only; initialize USART2 first. */
+USART2_init();
+fputc('A', stdout);
+```
+
+Sends one character to USART2 using polling.
+
+**Notes:** Compiled only for __CC_ARM or __ARMCC_VERSION. This is a C-library hook defined in ecUART2.c, not a new ecUART2.h API. PlatformIO GCC selects _write() instead.
+
+<a id="api-fgetc"></a>
+### `fgetc()`
+
+**Purpose:** Retarget one standard-input character to a blocking USART2 read in the Arm compiler branch.
+
+**Build status:** Arm compiler branch only; not compiled in the GCC branch.
+
+No public declaration in `ecUART2.h` (runtime hook or static helper) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L35)
+
+**Code structure**
+
+```c
+int fgetc(FILE* f)
+{
+    return USART_read(USART2);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `f` | `FILE *` | Input | Standard stream argument; ignored by the implementation. |
+| `Return` | `int` | Output | Received byte returned as an int. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Arm compiler branch only; wait for one character. */
+USART2_init();
+int key = fgetc(stdin);
+```
+
+Waits until USART2 has an unread byte and returns it.
+
+**Notes:** Compiled only for the Arm compiler branch. Do not also let a receive ISR consume the same byte without coordinating the input path.
+
+<a id="api-_write"></a>
+### `_write()`
+
+**Purpose:** Retarget GCC standard output to USART2 so printf() output is transmitted to the USB/ST-Link serial terminal.
+
+**Build status:** GCC branch; mutually exclusive with the Arm hooks above.
+
+No public declaration in `ecUART2.h` (runtime hook or static helper) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L42)
+
+**Code structure**
+
+```c
+int _write(int file, char* data, int len)
+{
+    // replace it with your 'send to uart' function
+    USART2_write((uint8_t*)data, len);
+
+    return len;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `file` | `int` | Input | File descriptor argument; ignored. |
+| `data` | `char *` | Input | Readable output buffer containing at least len bytes. |
+| `len` | `int` | Input | Positive number of bytes to transmit. |
+| `Return` | `int` | Output | Returns len after the blocking USART2 write. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+#include <stdio.h>
+#include "ecUART2.h"
+
+RCC_PLL_init();
+USART2_init();
+printf("MCU Initialized\r\n");
+```
+
+The C runtime invokes _write(); the message goes to USART2, not automatically to Bluetooth.
+
+**Notes:** Selected by __GNUC__ when the preceding Arm branch does not match. The hook does not validate file, negative lengths, or pointers, and does not report UART failures. There is no timeout.
+
+<a id="api-_read"></a>
+### `_read()`
+
+**Purpose:** Provide the current GCC input hook, which reads a USART2 byte but does not correctly implement the buffer/count contract of _read().
+
+**Build status:** GCC branch; mutually exclusive with the Arm hooks above.
+
+No public declaration in `ecUART2.h` (runtime hook or static helper) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L50)
+
+**Code structure**
+
+```c
+int _read(int file, char* data, int len)
+{
+    return USART2_read();
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `file` | `int` | Input | File descriptor; currently ignored. |
+| `data` | `char *` | Output (intended) | Destination buffer expected by the runtime; the current function never writes it. |
+| `len` | `int` | Input | Requested buffer length; currently ignored. |
+| `Return` | `int` | Output | Currently returns the byte value rather than a count of bytes stored. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* The GCC hook is present, but do not rely on scanf/getchar here.
+   For a direct byte read, use the implemented USART API instead. */
+if (is_USART2_RXNE()) {
+    uint8_t key = USART2_read();
+    // Process key in the chosen receive path.
+}
+```
+
+Demonstrates the direct byte-reading alternative; it does not claim the current _read() hook implements valid buffered input.
+
+**Notes:** This is a verified existing implementation issue, not repaired by the README update. The report documents _write() but not this input-hook problem. Polling input must not compete with an ISR for the same DR.
+
+<a id="api-usart_init"></a>
+### `USART_init()`
+
+**Purpose:** Configure supported TX/RX pins, enable the peripheral clock, select asynchronous 8N1 with 16× oversampling, set baud, and enable TX, RX, and RXNE interrupts.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L54) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L62)
+
+**Code structure**
+
+```c
+void USART_init(USART_TypeDef* USARTx, PinName_t pin_GPIO_TX, PinName_t pin_GPIO_RX, uint32_t baud){
+//1. GPIO Pin for TX and RX
+	USART_pins(USARTx, pin_GPIO_TX, pin_GPIO_RX);
+
+//2. USARTx (x=2,1,6) configuration
+	USART_clock_enable(USARTx);
+
+	// Disable USARTx.
+	USARTx->CR1 &= ~USART_CR1_UE; 	// USART disable
+
+	// No Parity / 8-bit word length / Oversampling x16 / Stop bit =1
+    USARTx->CR1 &= ~USART_CR1_PCE;   // No parity
+	USARTx->CR1 &= ~USART_CR1_M;     // 8-bit data
+	USARTx->CR1 &= ~USART_CR1_OVER8; // Oversampling by 16
+	USARTx->CR2 &= ~USART_CR2_STOP;  // 1 stop bit
+
+	// Set Baudrate using APB frequency (42MHz)
+	// If oversampling by 16, Tx/Rx baud = f_CK / (16*USARTDIV),
+	// If oversampling by 8,  Tx/Rx baud = f_CK / (8*USARTDIV)
+	USART_baud(USARTx, baud);
+
+	// Enable TX, RX, and USARTx
+	USARTx->CR1 |= (USART_CR1_RE | USART_CR1_TE);   	// Transmitter and Receiver enable
+	USARTx->CR1 |= USART_CR1_UE; 						          // USART enable
+
+// 3. RX interrupt (data ready to be read)
+  // Enable RXNE interrupt
+	USARTx->CR1 |= USART_CR1_RXNEIE;
+  // USART_IRQn
+	uint32_t USART_IRQ = USART2_IRQn;
+  // Set the priority and enable interrupt
+  if (USARTx == USART1)
+    USART_IRQ = USART1_IRQn;
+  else if (USARTx == USART6)
+    USART_IRQ = USART6_IRQn;
+ 
+	NVIC_SetPriority(USART_IRQ, 1);
+	NVIC_EnableIRQ(USART_IRQ);
+
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `USARTx` | `USART_TypeDef *` | Input | Valid supported peripheral: USART1, USART2, or USART6. |
+| `pin_GPIO_TX` | `PinName_t` | Input | TX pin physically compatible with the selected USART and AF mapping. |
+| `pin_GPIO_RX` | `PinName_t` | Input | RX pin physically compatible with the selected USART and AF mapping. |
+| `baud` | `uint32_t` | Input | Positive baud rate producing a valid BRR divider at the actual APB clock. Use a matching rate at the remote terminal/device. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+#include "ecUART2.h"
+
+RCC_PLL_init();
+USART_init(USART2, PA_2, PA_3, BAUD_9600);
+/* Provide USART2_IRQHandler() if incoming data is expected. */
+```
+
+Initializes USART2 at 9600 baud with PA2 TX/PA3 RX, 8 data bits, no parity, and 1 stop bit.
+
+**Notes:** RXNEIE requests receive interrupts; it does not make TX interrupt driven. The IRQ defaults to USART2_IRQn, with explicit USART1/USART6 selection, and priority is 1. Pins and pointers are not validated. The function is not a full reset of all previously configured synchronous/flow-control modes.
+
+<a id="api-usart_baud"></a>
+### `USART_baud()`
+
+**Purpose:** Calculate the oversampling-by-16 baud divider and write its mantissa/fraction fields to BRR while temporarily disabling UE.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L55) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L104)
+
+**Code structure**
+
+```c
+void USART_baud(USART_TypeDef* USARTx, uint32_t baud){
+	// Disable USARTx.
+	USARTx->CR1  &= ~USART_CR1_UE; 						// USART disable
+	USARTx->BRR = 0;
+
+	// Configure Baud-rate
+	float fCK = EC_SYSCLK;                                   // if(USARTx==USART1 || USARTx==USART6), APB2
+	                                                         // (84MHz after RCC_PLL_init(), 16MHz after RCC_HSI_init())
+	if(USARTx == USART2) fCK =fCK/2;      // APB1
+    float USARTDIV = (float) fCK/16.0/baud;
+
+	// Method 1 : build the two BRR fields explicitly
+	//   BRR[15:4] = DIV_Mantissa (integer part of USARTDIV)
+	//   BRR[3:0]  = DIV_Fraction (counts 1/16 steps -> multiply the fraction by 16)
+    uint32_t MNT = (uint32_t)USARTDIV;
+    uint32_t FRC = (uint32_t)round((USARTDIV - MNT) * 16.0);
+
+	if (FRC > 15U) {
+    	MNT++;
+    	FRC = 0U;
+	}
+
+	USARTx->BRR = (MNT << 4) | FRC;  
+	// Enable TX, RX, and USARTx
+	USARTx->CR1 |= USART_CR1_UE;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `USARTx` | `USART_TypeDef *` | Input | Valid supported peripheral: USART1, USART2, or USART6. |
+| `baud` | `uint32_t` | Input | Positive baud rate producing a valid BRR divider at the actual APB clock. Use a matching rate at the remote terminal/device. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+RCC_PLL_init();
+USART2_init();
+USART_baud(USART2, BAUD_57600);
+```
+
+Changes an initialized USART2 to a requested 57600 baud. Set the terminal to the same baud.
+
+**Notes:** Assumes USART1/6 PCLK = EC_SYSCLK and USART2 PCLK = EC_SYSCLK/2. This matches the course PLL bus setup, not arbitrary HSI/APB settings. It assumes OVER8 = 0 but does not set OVER8 itself. FRC is rounded and carried into MNT if it reaches 16. The function enables UE at the end even if it was previously disabled; it does not initialize GPIO, TE/RE, or wait for an in-progress transmission before disabling.
+
+<a id="api-usart_pins"></a>
+### `USART_pins()`
+
+**Purpose:** Configure compatible TX/RX GPIO pins as AF, push-pull, no pull, high speed, and select AF7 for USART1/2 or AF8 for USART6.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L56) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L133)
+
+**Code structure**
+
+```c
+void USART_pins(USART_TypeDef* USARTx, PinName_t pin_GPIO_TX, PinName_t pin_GPIO_RX){
+	GPIO_TypeDef *GPIO_TX;
+	unsigned int pinTX;
+	ecPinmap(pin_GPIO_TX, &GPIO_TX, &pinTX);
+
+	GPIO_TypeDef *GPIO_RX;
+	unsigned int pinRX;
+	ecPinmap(pin_GPIO_RX, &GPIO_RX, &pinRX);
+
+	// Alternate Function, Push-Pull, No Pull-up/down, High speed
+	GPIO_init(pin_GPIO_TX, AF);
+	GPIO_otype(pin_GPIO_TX, PUSH_PULL);
+	GPIO_pupd(pin_GPIO_TX, NO_PUPD);
+	GPIO_ospeed(pin_GPIO_TX, HIGH_SPEED);
+
+	GPIO_init(pin_GPIO_RX, AF);
+	GPIO_otype(pin_GPIO_RX, PUSH_PULL);
+	GPIO_pupd(pin_GPIO_RX, NO_PUPD);
+	GPIO_ospeed(pin_GPIO_RX, HIGH_SPEED);
+
+	// Set Alternate Function Register for USARTx
+	//   AF7 - USART1, USART2
+	//   AF8 - USART6
+	uint32_t AF_num = (USARTx == USART6) ? 8 : 7;
+	if (pinTX < 8) { GPIO_TX->AFR[0] &= ~(0xFUL << (4*pinTX));     GPIO_TX->AFR[0] |= AF_num << (4*pinTX); }
+	else           { GPIO_TX->AFR[1] &= ~(0xFUL << (4*(pinTX-8))); GPIO_TX->AFR[1] |= AF_num << (4*(pinTX-8)); }
+	
+  if (pinRX < 8) {
+    GPIO_RX->AFR[0] &= ~(0xFUL << (4 * pinRX));
+    GPIO_RX->AFR[0] |= AF_num << (4 * pinRX);
+	}
+	else {
+    GPIO_RX->AFR[1] &= ~(0xFUL << (4 * (pinRX - 8)));
+    GPIO_RX->AFR[1] |= AF_num << (4 * (pinRX - 8));
+	}
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `USARTx` | `USART_TypeDef *` | Input | Valid supported peripheral: USART1, USART2, or USART6. |
+| `pin_GPIO_TX` | `PinName_t` | Input | Compatible TX pin for the chosen USART. |
+| `pin_GPIO_RX` | `PinName_t` | Input | Compatible RX pin for the chosen USART. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+RCC_PLL_init();
+USART_pins(USART1, PA_9, PA_10);
+/* Pin setup only; peripheral configuration is still required. */
+```
+
+Selects AF7 on PA9/PA10 and configures their electrical GPIO settings.
+
+**Notes:** AFR[0] handles pins 0–7 and AFR[1] handles pins 8–15, with 4 bits per pin. The function does not check that an arbitrary pin actually supports the USART. Do not rely on the header's optional-pin comments without checking the MCU AF table. GPIO high speed is an edge-rate setting, not the baud rate.
+
+<a id="api-usart1_baud"></a>
+### `USART1_baud()`
+
+**Purpose:** Set USART1's baud rate through the general USART_baud() function.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L58) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L171)
+
+**Code structure**
+
+```c
+void USART1_baud(uint32_t baud){
+	USART_baud(USART1, baud);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `baud` | `uint32_t` | Input | Positive baud rate producing a valid BRR divider at the actual APB clock. Use a matching rate at the remote terminal/device. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+RCC_PLL_init();
+USART1_init();
+USART1_baud(BAUD_9600);
+```
+
+Requests 9600 baud on USART1 using the APB2 clock assumption.
+
+**Notes:** Does not select pins or initialize USART1. Inherits USART_baud()'s clock, oversampling, and reconfiguration limitations.
+
+<a id="api-usart2_baud"></a>
+### `USART2_baud()`
+
+**Purpose:** Set USART2's baud rate through the general USART_baud() function.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L59) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L174)
+
+**Code structure**
+
+```c
+void USART2_baud(uint32_t baud){
+	USART_baud(USART2, baud);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `baud` | `uint32_t` | Input | Positive baud rate producing a valid BRR divider at the actual APB clock. Use a matching rate at the remote terminal/device. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+RCC_PLL_init();
+USART2_init();
+USART2_baud(BAUD_57600);
+```
+
+Requests 57600 baud on USART2 using the assumed APB1 clock of SYSCLK/2.
+
+**Notes:** Use after initialization and match the terminal rate. A later USART2_init() call would restore the default 9600 baud.
+
+<a id="api-usart1_init"></a>
+### `USART1_init()`
+
+**Purpose:** Initialize USART1 on PA9 TX/PA10 RX at 9600 baud, 8N1, 16× oversampling, with RXNE interrupts at priority 1.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L65) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L183)
+
+**Code structure**
+
+```c
+void USART1_init(void){
+   // ********************** USART 1 ***************************
+   // PA_9 = USART1_TX (default)   // PB_6  (option)
+   // PA_10 = USART1_RX (default)   // PB_3 (option)
+   // APB2
+   // **********************************************************
+   //USART_init(USART1, PA_9, PA_10, 9600);
+
+  ////////////////////////////////////////////
+  //  for USART1  ONLY
+  ////////////////////////////////////////////
+  USART_TypeDef *USARTx= USART1;
+
+//1. GPIO Pin for TX and RX
+// Default : PA_9 = USART1_TX, PA_10 = USART1_RX
+   PinName_t pin_GPIO_TX  =PA_9;
+   PinName_t pin_GPIO_RX  =PA_10;
+
+   GPIO_TypeDef *GPIO_TX;
+   unsigned int pinTX;
+   ecPinmap(pin_GPIO_TX, &GPIO_TX, &pinTX);
+   GPIO_TypeDef *GPIO_RX;
+   unsigned int pinRX;
+   ecPinmap(pin_GPIO_RX, &GPIO_RX, &pinRX);
+
+   // Alternate Function, Push-Pull, No Pull-up/down, High speed
+   GPIO_init(pin_GPIO_TX, AF);
+   GPIO_otype(pin_GPIO_TX, PUSH_PULL);
+   GPIO_pupd(pin_GPIO_TX, LOW);
+   GPIO_ospeed(pin_GPIO_TX, HIGH_SPEED);
+
+   GPIO_init(pin_GPIO_RX, AF);
+   GPIO_otype(pin_GPIO_RX, PUSH_PULL);
+   GPIO_pupd(pin_GPIO_RX, LOW);
+   GPIO_ospeed(pin_GPIO_RX, HIGH_SPEED);
+
+    // Set Alternate Function Register for USARTx
+   //   AF7 - USART1, USART2
+   //   AF8 - USART6
+   uint32_t AF_num = (USARTx == USART6) ? 8 : 7;
+   if (pinTX < 8) { GPIO_TX->AFR[0] &= ~(0xFUL << (4*pinTX));     GPIO_TX->AFR[0] |= AF_num << (4*pinTX); }
+   else           { GPIO_TX->AFR[1] &= ~(0xFUL << (4*(pinTX-8))); GPIO_TX->AFR[1] |= AF_num << (4*(pinTX-8)); }
+   if (pinRX < 8) { GPIO_RX->AFR[0] &= ~(0xFUL << (4*pinRX));     GPIO_RX->AFR[0] |= AF_num << (4*pinRX); }
+   else           { GPIO_RX->AFR[1] &= ~(0xFUL << (4*(pinRX-8))); GPIO_RX->AFR[1] |= AF_num << (4*(pinRX-8)); }
+
+
+//2. USARTx (x=2,1,6) configuration
+  // Enable USART peripheral clock
+     //      USART2   = APB1
+     //      USART1,6 = APB2
+   USART_clock_enable(USARTx);
+
+  // Disable USARTx.
+   USARTx->CR1 &= ~USART_CR1_UE;         // disable while configuring
+
+  // No Parity / 8-bit word length / Oversampling x16
+   USARTx->CR1 &= ~USART_CR1_M;         // 8 data bits
+   USARTx->CR1 &= ~USART_CR1_PCE;         // no parity
+   USARTx->CR1 &= ~USART_CR1_OVER8;      // oversampling by 16
+   USARTx->CR2 &= ~USART_CR2_STOP;         // 1 stop bit
+
+  // BAUD RATE (Default: 9600)
+  //    Baud rate : BRR[15:4]=mantissa, BRR[3:0]=fraction (1/16 steps)
+  //    USARTDIV = f_APB1 / (16 x baud)
+  //    USART_baud(USARTx, 9600);
+  uint32_t baud=  9600;            // Default baud rate for USART2
+  // For USART2:   
+  //float fCK      = (float)EC_SYSCLK / 2;      // APB1 : 84MHz PLL -> 42MHz
+  // For USART1:   
+  float fCK      = (float)EC_SYSCLK;      // APB2 : 84MHz PLL -> 84MHz
+  
+  float USARTDIV = fCK / 16 / baud;
+  uint32_t MNT   = (uint32_t)USARTDIV;
+  uint32_t FRC   = round((USARTDIV - MNT) * 16);
+   if (FRC > 15) { MNT += 1; FRC = 0; }      // carry into the mantissa
+   USARTx->BRR = (MNT << 4) | FRC;
+
+  // Enable TX, RX
+   USARTx->CR1 |= (USART_CR1_TE | USART_CR1_RE);   // transmitter + receiver
+  // Enable USART
+     USARTx->CR1 |= USART_CR1_UE;
+
+// 3. RX interrupt (data ready to be read)
+  // Enable RXNE interrupt
+   USARTx->CR1 |= USART_CR1_RXNEIE;
+  // USART2 IRQ
+   uint32_t USART_IRQ = USART2_IRQn;
+   if (USARTx == USART1){
+      USART_IRQ = USART1_IRQn;
+   }
+   NVIC_SetPriority(USART_IRQ, 1);
+   NVIC_EnableIRQ(USART_IRQ);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `None` | `void parameter list` | — | No explicit arguments. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+#include "ecUART2.h"
+
+RCC_PLL_init();
+USART1_init();
+uint8_t message[] = "Hi_BT\r\n";
+USART1_write(message, sizeof(message) - 1U);
+```
+
+Sends the seven visible/control bytes through USART1 to a connected compatible serial device.
+
+**Notes:** The implementation repeats the full configuration instead of calling USART_init(). GPIO_pupd(..., LOW) uses encoding 0, so it selects no pull; it does not force the input LOW. The APB2 baud calculation uses EC_SYSCLK. Provide the RX handler in the application. No Bluetooth pairing is performed by this function.
+
+<a id="api-usart2_init"></a>
+### `USART2_init()`
+
+**Purpose:** Initialize USART2 on PA2 TX/PA3 RX for ST-Link virtual-COM communication at 9600 baud, 8N1, 16× oversampling, and RXNE priority 1.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L66) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L279)
+
+**Code structure**
+
+```c
+void USART2_init(void){
+// ********************** USART 2 ***************************
+// PA2 = USART2_TX
+// PA3 = USART2_RX
+// Alternate function(AF7), High Speed, Push pull, Pull up
+// **********************************************************
+// USART_init(USART2, PA_2, PA_3, 9600);
+
+////////////////////////////////////////////
+//  for USART2  ONLY
+////////////////////////////////////////////
+  USART_TypeDef *USARTx= USART2;
+
+//1. GPIO Pin for TX and RX
+// Default : PA_2 = USART2_TX, PA_3 = USART2_RX
+	PinName_t pin_GPIO_TX  =PA_2;
+	PinName_t pin_GPIO_RX  =PA_3;
+
+	GPIO_TypeDef *GPIO_TX;
+	unsigned int pinTX;
+	ecPinmap(pin_GPIO_TX, &GPIO_TX, &pinTX);
+	GPIO_TypeDef *GPIO_RX;
+	unsigned int pinRX;
+	ecPinmap(pin_GPIO_RX, &GPIO_RX, &pinRX);
+
+	// Alternate Function, Push-Pull, No Pull-up/down, High speed
+	GPIO_init(pin_GPIO_TX, AF);
+	GPIO_otype(pin_GPIO_TX, PUSH_PULL);
+	GPIO_pupd(pin_GPIO_TX, NO_PUPD);
+	GPIO_ospeed(pin_GPIO_TX, HIGH_SPEED);
+
+	GPIO_init(pin_GPIO_RX, AF);
+	GPIO_otype(pin_GPIO_RX, PUSH_PULL);
+	GPIO_pupd(pin_GPIO_RX, NO_PUPD);
+	GPIO_ospeed(pin_GPIO_RX, HIGH_SPEED);
+
+ 	// Set Alternate Function Register for USARTx
+	//   AF7 - USART1, USART2
+	//   AF8 - USART6
+	uint32_t AF_num = (USARTx == USART6) ? 8 : 7;
+	if (pinTX < 8) { GPIO_TX->AFR[0] &= ~(0xFUL << (4*pinTX));     GPIO_TX->AFR[0] |= AF_num << (4*pinTX); }
+	else           { GPIO_TX->AFR[1] &= ~(0xFUL << (4*(pinTX-8))); GPIO_TX->AFR[1] |= AF_num << (4*(pinTX-8)); }
+	if (pinRX < 8) { GPIO_RX->AFR[0] &= ~(0xFUL << (4*pinRX));     GPIO_RX->AFR[0] |= AF_num << (4*pinRX); }
+	else           { GPIO_RX->AFR[1] &= ~(0xFUL << (4*(pinRX-8))); GPIO_RX->AFR[1] |= AF_num << (4*(pinRX-8)); }
+
+
+//2. USARTx (x=2,1,6) configuration
+  // Enable USART peripheral clock
+  	//      USART2   = APB1
+  	//      USART1,6 = APB2
+	USART_clock_enable(USARTx);
+
+  // Disable USARTx.
+	USARTx->CR1 &= ~USART_CR1_UE;			// disable while configuring
+
+  // No Parity / 8-bit word length / Oversampling x16
+	USARTx->CR1 &= ~USART_CR1_M;			// 8 data bits
+	USARTx->CR1 &= ~USART_CR1_PCE;			// no parity
+	USARTx->CR1 &= ~USART_CR1_OVER8;		// oversampling by 16
+	USARTx->CR2 &= ~USART_CR2_STOP;			// 1 stop bit
+
+  // BAUD RATE (Default: 9600)
+  //    Baud rate : BRR[15:4]=mantissa, BRR[3:0]=fraction (1/16 steps)
+  //    USARTDIV = f_APB1 / (16 x baud)
+  //    USART_baud(USARTx, 9600);
+  uint32_t baud=  9600;				// Default baud rate for USART2
+  float fCK      = (float)EC_SYSCLK / 2;		// APB1 : 84MHz PLL -> 42MHz
+  float USARTDIV = fCK / 16 / baud;
+  uint32_t MNT   = (uint32_t)USARTDIV;
+  uint32_t FRC   = round((USARTDIV - MNT) * 16);
+	if (FRC > 15) { MNT += 1; FRC = 0; }		// carry into the mantissa
+	USARTx->BRR = (MNT << 4) | FRC;
+
+  // Enable TX, RX
+	USARTx->CR1 |= (USART_CR1_TE | USART_CR1_RE);	// transmitter + receiver
+  // Enable USART
+  	USARTx->CR1 |= USART_CR1_UE;
+
+// 3. RX interrupt (data ready to be read)
+  // Enable RXNE interrupt
+	USARTx->CR1 |= USART_CR1_RXNEIE;
+  // USART2 IRQ
+	uint32_t USART_IRQ = USART2_IRQn;
+	if (USARTx == USART1){
+		USART_IRQ = USART1_IRQn;
+	}
+	NVIC_SetPriority(USART_IRQ, 1);
+	NVIC_EnableIRQ(USART_IRQ);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `None` | `void parameter list` | — | No explicit arguments. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+#include <stdio.h>
+#include "ecUART2.h"
+
+RCC_PLL_init();
+USART2_init();
+printf("MCU Initialized\r\n");
+```
+
+Displays the startup message in the USB/ST-Link serial terminal when its settings match.
+
+**Notes:** Uses AF7, high GPIO speed, push-pull, and no pull. The retained comment saying Pull up is not the actual setting. Its APB1 calculation assumes EC_SYSCLK/2. USB conversion is supplied by the board's ST-Link interface; USART2 itself is not a USB peripheral.
+
+<a id="api-usart1_write"></a>
+### `USART1_write()`
+
+**Purpose:** Transmit a byte buffer on USART1 using the general polling transmitter.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L69) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L371)
+
+**Code structure**
+
+```c
+void USART1_write(uint8_t* buffer, uint32_t nBytes){
+	USART_write(USART1, buffer, nBytes);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `buffer` | `uint8_t *` | Input | Readable buffer containing at least nBytes bytes; the implementation does not modify it despite the non-const pointer. |
+| `nBytes` | `uint32_t` | Input | Number of bytes to send. Use a positive count no larger than INT_MAX because the implementation's loop index is int. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* After USART1 initialization. */
+uint8_t text[] = "Hello\r\n";
+USART1_write(text, sizeof(text) - 1U);
+```
+
+Sends seven bytes on USART1; the terminating NUL is not sent.
+
+**Notes:** Blocking wrapper for USART_write(USART1, ...). Does not automatically send to USART2 or interpret commands.
+
+<a id="api-usart2_write"></a>
+### `USART2_write()`
+
+**Purpose:** Transmit a byte buffer on USART2 using the general polling transmitter.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L70) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L374)
+
+**Code structure**
+
+```c
+void USART2_write(uint8_t* buffer, uint32_t nBytes){
+	USART_write(USART2, buffer, nBytes);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `buffer` | `uint8_t *` | Input | Readable buffer containing at least nBytes bytes; the implementation does not modify it despite the non-const pointer. |
+| `nBytes` | `uint32_t` | Input | Number of bytes to send. Use a positive count no larger than INT_MAX because the implementation's loop index is int. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* After USART2 initialization. */
+uint8_t text[] = "USB ready\r\n";
+USART2_write(text, sizeof(text) - 1U);
+```
+
+Sends the message to the ST-Link USB serial connection.
+
+**Notes:** Blocking wrapper for USART_write(USART2, ...). The length counts bytes, not the size of a pointer.
+
+<a id="api-usart1_read"></a>
+### `USART1_read()`
+
+**Purpose:** Read one received byte from USART1 through USART_read().
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L71) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L377)
+
+**Code structure**
+
+```c
+uint8_t USART1_read(void){
+	return USART_read(USART1);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `None` | `void parameter list` | — | No explicit arguments. |
+| `Return` | `uint8_t` | Output | One received byte, masked to its lowest 8 bits. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Within USART1_IRQHandler(), or an exclusive polling input path. */
+if (is_USART1_RXNE()) {
+    uint8_t key = USART1_read();
+    // Process or store key.
+}
+```
+
+Consumes one available USART1 byte and clears RXNE through the DR read.
+
+**Notes:** The wrapper blocks if no data is available. Check RXNE first in a receive handler and avoid multiple consumers of the same peripheral.
+
+<a id="api-usart2_read"></a>
+### `USART2_read()`
+
+**Purpose:** Read one received byte from USART2 through USART_read().
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L72) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L380)
+
+**Code structure**
+
+```c
+uint8_t USART2_read(void){
+	return USART_read(USART2);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `None` | `void parameter list` | — | No explicit arguments. |
+| `Return` | `uint8_t` | Output | One received byte, masked to its lowest 8 bits. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Within USART2_IRQHandler(), or an exclusive polling input path. */
+if (is_USART2_RXNE()) {
+    uint8_t key = USART2_read();
+    // Process or store key.
+}
+```
+
+Consumes one available USART2 byte.
+
+**Notes:** This is the direct receive API; it is distinct from the defective GCC _read() runtime hook. It does not assemble a string.
+
+<a id="api-is_usart1_rxne"></a>
+### `is_USART1_RXNE()`
+
+**Purpose:** Check whether USART1 contains unread received data.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L75) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L384)
+
+**Code structure**
+
+```c
+uint32_t is_USART1_RXNE(void){
+	return is_USART_RXNE(USART1);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `None` | `void parameter list` | — | No explicit arguments. |
+| `Return` | `uint32_t` | Output | 1 when RXNE is set, otherwise 0. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+if (is_USART1_RXNE()) {
+    uint8_t received = USART1_read();
+    // Store received for application processing.
+}
+```
+
+Checks availability before consuming the USART1 byte.
+
+**Notes:** Reads status only; it neither generates an interrupt nor clears RXNE. A DR read consumes the data.
+
+<a id="api-is_usart2_rxne"></a>
+### `is_USART2_RXNE()`
+
+**Purpose:** Check whether USART2 contains unread received data.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L76) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L387)
+
+**Code structure**
+
+```c
+uint32_t is_USART2_RXNE(void){
+	return is_USART_RXNE(USART2);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `None` | `void parameter list` | — | No explicit arguments. |
+| `Return` | `uint32_t` | Output | 1 when RXNE is set, otherwise 0. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+if (is_USART2_RXNE()) {
+    uint8_t received = USART2_read();
+    // Store received for application processing.
+}
+```
+
+Checks availability before consuming the USART2 byte.
+
+**Notes:** A numbered wrapper for is_USART_RXNE(USART2).
+
+<a id="api-usart_clock_enable"></a>
+### `USART_clock_enable()`
+
+**Purpose:** Enable the selected USART's RCC peripheral clock.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L80) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L393)
+
+**Code structure**
+
+```c
+void USART_clock_enable(USART_TypeDef* USARTx){
+	if (USARTx == USART1)
+		RCC->APB2ENR |= RCC_APB2ENR_USART1EN; 	// Enable USART 1 clock (APB2 clock: AHB clock = 84MHz)
+	else if(USARTx == USART2)
+		RCC->APB1ENR |= RCC_APB1ENR_USART2EN;  	// Enable USART 2 clock (APB1 clock: AHB clock/2 = 42MHz)
+	else
+		RCC->APB2ENR |= RCC_APB2ENR_USART6EN;  	// Enable USART 6 clock (APB2 clock: AHB clock = 84MHz)
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `USARTx` | `USART_TypeDef *` | Input | Valid supported peripheral: USART1, USART2, or USART6. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+USART_clock_enable(USART1);
+```
+
+Enables USART1 through RCC_APB2ENR_USART1EN.
+
+**Notes:** USART2 uses APB1; USART1/6 use APB2. The final else enables USART6 for every pointer other than USART1/2, so unsupported pointers must not be passed. Clock gating does not set UE, TE, RE, GPIO AF, or baud.
+
+<a id="api-usart_write"></a>
+### `USART_write()`
+
+**Purpose:** Send nBytes by polling TXE before each DR write, then poll TC after the last byte.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L81) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L402)
+
+**Code structure**
+
+```c
+void USART_write(USART_TypeDef * USARTx, uint8_t *buffer, uint32_t nBytes) {
+	// TXE is set by hardware when the content of the TDR
+	// register has been transferred into the shift register.
+	int i;
+	for (i = 0; i < nBytes; i++) {
+		// wait until TXE (TX empty) bit is set
+		while (!(USARTx->SR & USART_SR_TXE));
+		// Writing USART_DR automatically clears the TXE flag
+		USARTx->DR = buffer[i] & 0xFF;
+		USART_delay(300);
+	}
+	// wait until TC bit is set
+	while (!(USARTx->SR & USART_SR_TC));
+	// TC bit clear
+	USARTx->SR &= ~USART_SR_TC;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `USARTx` | `USART_TypeDef *` | Input | Valid supported peripheral: USART1, USART2, or USART6. |
+| `buffer` | `uint8_t *` | Input | Readable buffer containing at least nBytes bytes; the implementation does not modify it despite the non-const pointer. |
+| `nBytes` | `uint32_t` | Input | Number of bytes to send. Use a positive count no larger than INT_MAX because the implementation's loop index is int. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+RCC_PLL_init();
+USART2_init();
+uint8_t text[] = "Hello\r\n";
+USART_write(USART2, text, sizeof(text) - 1U);
+```
+
+Returns after the buffer has been submitted and the final frame has completed on the transmitter.
+
+**Notes:** Writing DR clears TXE; hardware sets TXE when the transmit holding register transfers to the shift register. TC indicates final frame completion, including the stop bit, not merely an empty holding register. USART_delay(300) adds a software busy wait for every byte. There is no timeout; nBytes = 0 can still wait on TC and must not be assumed an immediate no-op. Polling TX inside an ISR increases its execution time.
+
+<a id="api-usart_read"></a>
+### `USART_read()`
+
+**Purpose:** Wait until RXNE is set, then read and return the low 8 bits of DR.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L82) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L419)
+
+**Code structure**
+
+```c
+uint8_t USART_read(USART_TypeDef * USARTx){
+	// Wait until RXNE (RX not empty) bit is set by HW -->Read to read
+	while (is_USART_RXNE(USARTx) == 0);
+	// Reading USART_DR automatically clears the RXNE flag
+	return ((uint8_t)(USARTx->DR & 0xFF));
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `USARTx` | `USART_TypeDef *` | Input | Valid supported peripheral: USART1, USART2, or USART6. |
+| `Return` | `uint8_t` | Output | One received byte, masked to its lowest 8 bits. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Use only in the application's chosen receive path. */
+if (is_USART_RXNE(USART1)) {
+    uint8_t received = USART_read(USART1);
+    // Store or process received.
+}
+```
+
+Reads one byte; reading DR clears RXNE.
+
+**Notes:** This is a blocking polling read if called without data, even though it is commonly called after an RXNE check in an ISR. It does not inspect framing/parity/overrun errors; receive_irq() adds an SR/DR error-handling path. Do not wait here inside an ISR when no byte is ready.
+
+<a id="api-is_usart_rxne"></a>
+### `is_USART_RXNE()`
+
+**Purpose:** Return whether the chosen USART has unread received data.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L83) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L426)
+
+**Code structure**
+
+```c
+uint32_t is_USART_RXNE(USART_TypeDef * USARTx){
+	return (USARTx->SR & USART_SR_RXNE) != 0;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `USARTx` | `USART_TypeDef *` | Input | Valid supported peripheral: USART1, USART2, or USART6. |
+| `Return` | `uint32_t` | Output | 1 when RXNE is set, otherwise 0. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+if (is_USART_RXNE(USART2)) {
+    uint8_t data = USART_read(USART2);
+    // Process data.
+}
+```
+
+Tests SR.RXNE without reading DR.
+
+**Notes:** Does not acknowledge reception or enable interrupts. RXNE can generate an IRQ only when its interrupt request and the matching NVIC IRQ are enabled.
+
+<a id="api-usart_delay"></a>
+### `USART_delay()`
+
+**Purpose:** Provide the transmission routine's software loop delay.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L84) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L430)
+
+**Code structure**
+
+```c
+void USART_delay(uint32_t us) {
+   uint32_t time = 100*us/7;
+   while(--time);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `us` | `uint32_t` | Input | Loop-scaling parameter named as microseconds; not a calibrated duration. Use the existing positive value 300 in the transmitter. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* After clock setup; illustrative internal-helper call. */
+USART_delay(300U);
+```
+
+Busy-waits using 100 × us / 7 loop scaling, without SysTick.
+
+**Notes:** Actual duration depends on CPU clock and optimization. The counter is not volatile, so optimization may remove the loop. If time starts at zero, --time underflows; the multiplication can also overflow. Do not use it as a precise timer or assume us = 0 is an immediate return.
+
+<a id="api-terminal_write"></a>
+### `terminal_write()`
+
+**Purpose:** Send a NUL-terminated message to Bluetooth and USB using polling, checking for a STOP request between byte transmissions.
+
+**Visibility:** `static`, internal to `ecUART2.c`.
+
+No public declaration in `ecUART2.h` (runtime hook or static helper) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L466)
+
+**Code structure**
+
+```c
+static void terminal_write(const char *text)
+{
+    while (*text != '\0') {
+        if (stopRequested) return;
+
+        uint8_t data = (uint8_t)*text++;
+        USART1_write(&data, 1);
+
+        if (stopRequested) return;
+
+        USART2_write(&data, 1);
+    }
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `text` | `const char *` | Input | Non-null NUL-terminated message. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Inside ecUART2.c, after both USARTs are initialized, from main context. */
+terminal_write("LED ON\r\n");
+```
+
+Sends each character to USART1 and then USART2; a STOP request can truncate the message.
+
+**Notes:** File-local static helper; it cannot be called directly from another .c file and has no public header declaration. Do not call from an ISR. A stop flag does not abort a USART_write() already in progress. This helper explains why printf alone only appears on USB, whereas controller feedback is sent to both terminals.
+
+<a id="api-receive_byte"></a>
+### `receive_byte()`
+
+**Purpose:** Record a received byte and its source in the shared ring buffer, preserving P/p as a separate STOP request.
+
+**Visibility:** `static`, internal to `ecUART2.c`.
+
+No public declaration in `ecUART2.h` (runtime hook or static helper) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L482)
+
+**Code structure**
+
+```c
+static void receive_byte(uint8_t data, uint8_t source)
+{
+    if (data == 'P' || data == 'p') {
+        stopSource = source;
+        stopRequested = 1;
+        return;
+    }
+
+    if (stopRequested) return;
+
+    uint32_t next = (rxHead + 1U) % RX_BUF_SIZE;
+
+    if (next == rxTail) {
+        rxOverflow = 1;
+        return;
+    }
+
+    rxBuffer[rxHead] = data;
+    rxSource[rxHead] = source;
+    rxHead = next;
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `data` | `uint8_t` | Input | Received byte; P or p sets stopRequested instead of entering the ring. |
+| `source` | `uint8_t` | Input | Source identifier: 1 for Bluetooth/USART1, 2 for USB/USART2. The shared queue requires serialized RX handlers. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Inside ecUART2.c, called by receive_irq() after a valid DR read. */
+receive_byte('J', 1U);
+```
+
+Queues a Bluetooth J byte unless a stop is pending or the ring is full.
+
+**Notes:** File-local static helper; external application code calls receive_irq() instead. The 64-slot ring holds at most 63 queued bytes because one slot separates full from empty. Overflow sets rxOverflow and drops the new byte. Ordinary input is dropped while STOP is pending. RX handlers must not preempt each other while updating the shared head.
+
+<a id="api-receive_irq"></a>
+### `receive_irq()`
+
+**Purpose:** Read USART status followed by data, record receive errors, and queue a valid received byte with its source.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L90) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L507)
+
+**Code structure**
+
+```c
+void receive_irq(USART_TypeDef *uart, uint8_t source)
+{
+    uint32_t status = uart->SR;
+
+    if (status & (USART_SR_RXNE | RX_ERRORS)) {
+        uint8_t data = (uint8_t)uart->DR;
+
+        if (status & RX_ERRORS) {
+            uartError = 1;
+            return;
+        }
+
+        if (status & USART_SR_RXNE) {
+            receive_byte(data, source);
+        }
+    }
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `uart` | `USART_TypeDef *` | Input | Initialized USART peripheral whose receive interrupt is being handled. |
+| `source` | `uint8_t` | Input | Source identifier: 1 for Bluetooth/USART1, 2 for USB/USART2. The shared queue requires serialized RX handlers. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Application handlers for the controller receive path.
+   Set both USART IRQs to the same preemption priority in setup(). */
+void USART1_IRQHandler(void)
+{
+    receive_irq(USART1, 1U);
+}
+
+void USART2_IRQHandler(void)
+{
+    receive_irq(USART2, 2U);
+}
+```
+
+Keeps receive handling short by storing data rather than printing or moving the motor.
+
+**Notes:** If ORE/FE/NE/PE is present, the byte is discarded and uartError is set. Reading SR then DR clears the corresponding receive error condition. RXNE alone forwards the byte to receive_byte(). Pairing, command execution, and normal TX are not performed here.
+
+<a id="api-uart_control_init"></a>
+### `UART_control_init()`
+
+**Purpose:** Initialize the controller's LED selection, movement size, receive queue indices, and stop/error state, then print startup messages to both terminals.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L87) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L527)
+
+**Code structure**
+
+```c
+void UART_control_init(PinName_t ledPin, uint32_t totalSteps)
+{
+    uint32_t irqState = __get_PRIMASK();
+    __disable_irq();
+
+    controlLED = ledPin;
+    steps = totalSteps;
+    remainingSteps = 0;
+    direction = DIR_CW;
+
+    rxHead = 0;
+    rxTail = 0;
+    stopRequested = 0;
+    stopSource = 1;
+    rxOverflow = 0;
+    uartError = 0;
+
+    __set_PRIMASK(irqState);
+
+    terminal_write("\r\nMCU Initialized - BT TEST v3\r\n");
+    terminal_write("C/B: 2 revolutions  P: STOP\r\n");
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `ledPin` | `PinName_t` | Input | Previously initialized output pin for LED control. |
+| `totalSteps` | `uint32_t` | Input | FSM step count for each requested movement; no automatic conversion from revolutions. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* After PLL, SysTick, motor, PA5 output, and both USARTs are initialized. */
+UART_control_init(PA_5, STEP_PER_REV * 2U);
+```
+
+Selects PA5 and a nominal two-full-step-revolution movement size, then announces initialization.
+
+**Notes:** Does not initialize GPIO, stepper, USART hardware, or pairing. It briefly saves/restores PRIMASK around shared-state reset; array contents need not be erased after indices are reset. The current startup text is C/B: 2 revolutions P: STOP, whereas the report shows H/L and J/K. This string does not derive the actual totalSteps and is inaccurate if configured for another movement size.
+
+<a id="api-uart_middle_c"></a>
+### `UART_middle_c()`
+
+**Purpose:** Run the active exam-era controller task, which differs from the report's H/L/J/K/P Bluetooth task.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L91) · [Definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L656)
+
+**Code structure**
+
+```c
+void UART_middle_c(void) {
+    uint8_t command = 0;
+    uint8_t source = 0;
+    uint8_t overflow;
+    uint8_t error;
+    int sensorState = 0;
+    int buttonState = 0;
+    // Safely take one received command.
+    uint32_t irqState = __get_PRIMASK();
+    __disable_irq();
+
+    overflow = rxOverflow;
+    error = uartError;
+    rxOverflow = 0;
+    uartError = 0;
+    buttonState=GPIO_read(PA_4);
+    sensorState = GPIO_read(PA_0);
+    
+    if (stopRequested) {
+        command = 'P';
+        source = stopSource;
+
+        // Discard commands waiting before STOP.
+        rxTail = rxHead;
+        stopRequested = 0;
+    }
+    else if (rxTail != rxHead) {
+        command = rxBuffer[rxTail];
+        source = rxSource[rxTail];
+        rxTail = (rxTail + 1U) % RX_BUF_SIZE;
+    }
+
+    __set_PRIMASK(irqState);
+    // Process a received character. Enter is not required.
+    if (source != 0 && command != '\r' && command != '\n') {
+        uint8_t key = command;
+        const char *reply;
+
+        if (key >= 'a' && key <= 'z') {
+            key -= ('a' - 'A');
+        }
+
+        if (key == 'H') {
+            GPIO_write(controlLED, HIGH);
+            reply = "LED ON\r\n";
+        }
+        else if (key == 'L') {
+            GPIO_write(controlLED, LOW);
+            reply = "LED OFF\r\n";
+        }
+        else if (key == 'C') {
+            direction = DIR_CW;
+            remainingSteps = steps;
+            reply = "CW Start\r\n";
+            FND_select(0);
+            FND_display(0);  
+        }
+        else if (key == 'B') {
+            direction = DIR_CCW;
+            remainingSteps = steps;
+            reply = "CCW Start\r\n";
+            FND_select(1);
+            FND_display(0);
+        }
+        else if (sensorState) {
+            remainingSteps = 0;
+            stepper_stop();
+            reply = "Motor STOP\r\n";
+        }
+        else {
+            reply = "Use H L J K P\r\n";
+        }
+
+        char message[48];
+
+        snprintf(message, sizeof(message),
+                 "[%s RX] %c (0x%02X)\r\n",
+                 source == 1 ? "BT" : "USB",
+                 (command >= 32 && command <= 126) ? command : '?',
+                 (unsigned int)command);
+
+        terminal_write(message);
+        terminal_write(reply);
+    }
+
+    if (overflow) {
+        terminal_write(
+            "RX buffer full: send one key at a time.\r\n");
+    }
+
+    if (error) {
+        terminal_write(
+            "UART RX error: check baud and wiring.\r\n");
+    }
+
+    // Move one step, then return to main.
+    if (remainingSteps > 0 && !stopRequested) {
+        stepper_step(1, direction);
+        remainingSteps--;
+
+        if (remainingSteps == 0 && !stopRequested) {
+            stepper_stop();
+            terminal_write("Motor Finished\r\n");
+        }
+    }
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `None` | `void parameter list` | — | No explicit arguments. |
+| `Return` | `void` | — | No return value. |
+
+**Example code**
+
+Examples are independent application fragments; include `ecUART2.h` and the required GPIO/RCC/stepper headers. Static-helper and runtime-hook examples have the visibility/toolchain restrictions stated above. Do not install multiple definitions of the same IRQ handler.
+
+```c
+/* Current source API, shown for identification only:
+   UART_middle_c();
+
+   It is not a compatible replacement for the report's
+   UART_control_task(). See the behavior notes below. */
+```
+
+The function exists and is public, but this example intentionally does not present the exam task as the report's working controller.
+
+**Notes:** Call prerequisites include the controller state, motor/USARTs/LED, sensor PA0, button PA4, and FND initialization. It accepts H/L and C/B direction commands, writes FND positions 0/1, and polls PA0/PA4. buttonState is read but unused. Its sensor stop test is inside command processing and comes after recognized H/L/C/B branches, so sensor input is not a continuously enforced stop. There is no explicit key == P stop branch: a queued STOP is consumed and cleared without reliably stopping movement. Its fallback still lists J/K/P. These are current-source differences, not fixes made here; PA10 FND selection would also conflict with USART1 RX if that standard mapping is used.
+
+<a id="api-uart_control_task"></a>
+### `UART_control_task()` — report version; no active definition at this baseline
+
+**Purpose in the report:** Process H/L for LED control, J/K for a new configured movement in either direction, and P for STOP; advance the motor one step per main-loop call and send feedback to both terminals.
+
+[Declaration](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.h#L88) · [Commented source](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecUART2.c#L552)
+
+**Code structure — current commented block, not a compiled implementation**
+
+The final report contains an active implementation with the same H/L/J/K/P logic. In the reviewed GitHub source, every line of that function is commented out, as preserved here. It is not counted among this module's active definition entries.
+
+```c
+// void UART_control_task(void)
+// {
+//     uint8_t command = 0;
+//     uint8_t source = 0;
+//     uint8_t overflow;
+//     uint8_t error;
+
+//     // Safely take one received command.
+//     uint32_t irqState = __get_PRIMASK();
+//     __disable_irq();
+
+//     overflow = rxOverflow;
+//     error = uartError;
+//     rxOverflow = 0;
+//     uartError = 0;
+
+//     if (stopRequested) {
+//         command = 'P';
+//         source = stopSource;
+
+//         // Discard commands waiting before STOP.
+//         rxTail = rxHead;
+//         stopRequested = 0;
+//     }
+//     else if (rxTail != rxHead) {
+//         command = rxBuffer[rxTail];
+//         source = rxSource[rxTail];
+//         rxTail = (rxTail + 1U) % RX_BUF_SIZE;
+//     }
+
+//     __set_PRIMASK(irqState);
+
+//     // Process a received character. Enter is not required.
+//     if (source != 0 && command != '\r' && command != '\n') {
+//         uint8_t key = command;
+//         const char *reply;
+
+//         if (key >= 'a' && key <= 'z') {
+//             key -= ('a' - 'A');
+//         }
+
+//         if (key == 'H') {
+//             GPIO_write(controlLED, HIGH);
+//             reply = "LED ON\r\n";
+//         }
+//         else if (key == 'L') {
+//             GPIO_write(controlLED, LOW);
+//             reply = "LED OFF\r\n";
+//         }
+//         else if (key == 'J') {
+//             direction = DIR_CW;
+//             remainingSteps = steps;
+//             reply = "CW Start\r\n";            
+//         }
+//         else if (key == 'K') {
+//             direction = DIR_CCW;
+//             remainingSteps = steps;
+//             reply = "CCW Start\r\n";
+//         }
+//         else if (key == 'P') {
+//             remainingSteps = 0;
+//             stepper_stop();
+//             reply = "Motor STOP\r\n";
+//         }
+//         else {
+//             reply = "Use H L J K P\r\n";
+//         }
+
+//         char message[48];
+
+//         snprintf(message, sizeof(message),
+//                  "[%s RX] %c (0x%02X)\r\n",
+//                  source == 1 ? "BT" : "USB",
+//                  (command >= 32 && command <= 126) ? command : '?',
+//                  (unsigned int)command);
+
+//         terminal_write(message);
+//         terminal_write(reply);
+//     }
+
+//     if (overflow) {
+//         terminal_write(
+//             "RX buffer full: send one key at a time.\r\n");
+//     }
+
+//     if (error) {
+//         terminal_write(
+//             "UART RX error: check baud and wiring.\r\n");
+//     }
+
+//     // Move one step, then return to main.
+//     if (remainingSteps > 0 && !stopRequested) {
+//         stepper_step(1, direction);
+//         remainingSteps--;
+
+//         if (remainingSteps == 0 && !stopRequested) {
+//             stepper_stop();
+//             terminal_write("Motor Finished\r\n");
+//         }
+//     }
+// }
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| None | `void` parameter list | — | The report version uses the previously initialized controller state. |
+| Return | `void` in the declared/report interface | — | No return value; no active linked definition at this baseline. |
+
+**Example code — report application pattern; unavailable with the current library**
+
+```c
+/* Report pattern only, not a working call at the reviewed baseline:
+   Initialize GPIO, the motor, SysTick, USART1/2, then call:
+   UART_control_init(PA_5, STEP_PER_REV * 2U);
+
+   while (1) {
+       UART_control_task();
+   }
+
+   The task must have an active linked definition before this can build.
+*/
+```
+
+**Notes:** STOP is preserved separately and processed before ordinary queued bytes; processing STOP discards older queued commands. J/K replace the remaining movement with a new full `steps` request. One-step movement lets the task check commands between steps, but blocking TX and the current step delay still limit stop response. Source identifiers 1/2 distinguish Bluetooth/USB. The receive handlers must not preempt each other. The report task is not replaced by `UART_middle_c()`: its command set, sensor/FND behavior, and STOP handling differ.
+
+<a id="api-lab_usart_init"></a>
+### `LAB_USART_init()` — setup wrapper in `ecSTM32F4v2.h`
+
+**Purpose:** Initialize USART2 for the local PC and USART1 for another MCU or Bluetooth, then set each connection's requested baud rate.
+
+**Visibility:** `static inline` definition in the system header; unlike the two file-local UART helpers, this wrapper is available to application files that include that header.
+
+[Declaration and definition](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include/ecSTM32F4v2.h#L128)
+
+**Code structure**
+
+```c
+static inline void LAB_USART_init(
+    uint32_t usbBaud,
+    uint32_t linkBaud)
+{
+    // USART2: local PC through ST-Link USB.
+    USART2_init();
+    USART2_baud(usbBaud);
+
+    // USART1: another MCU or a Bluetooth module.
+    USART1_init();
+    USART1_baud(linkBaud);
+}
+```
+
+**Parameters and return value**
+
+| Name | Type | Direction | Meaning / valid range |
+| --- | --- | --- | --- |
+| `usbBaud` | `uint32_t` | Input | Positive baud rate for USART2/USB, matching the PC terminal. |
+| `linkBaud` | `uint32_t` | Input | Positive baud rate for USART1, matching the other MCU or HC-06 UART. |
+| Return | `void` | — | No return value. |
+
+**Example code**
+
+```c
+#include "ecSTM32F4v2.h"
+
+/* Inside setup(); provide USART1/2 handlers for the chosen RX path. */
+RCC_PLL_init();
+LAB_USART_init(BAUD_9600, BAUD_9600);
+```
+
+Both links use 9600 baud. This is the setup wrapper used in both USART LAB applications and the report.
+
+**Notes:** The wrapper does not initialize the system clock, SysTick, LEDs, motor, controller state, or Bluetooth pairing. It inherits the numbered initializers' RX interrupt setup and the baud functions' clock assumptions. Other LAB wrappers in this header are outside this USART documentation update.
+
 <a id="module-timer"></a>
 ## Timer Counter and Update Interrupts — `ecTIM2.h/.c`
 
@@ -3504,7 +5257,7 @@ Decodes PA5 as TIM2 channel 1 without configuring hardware.
 
 ## Preprocessor Helpers Are Not Functions
 
-The following macros also appear in [ecPinNames.h](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecPinNames.h#L12). They are separate from the 64 documented function definitions counted above.
+The following macros also appear in [ecPinNames.h](https://github.com/moonbib/EC-STM32F4-22200264/blob/b94fc559ceaaea1df8729b2d61367fe464374dae/include/ecPinNames.h#L12). They are separate from the 92 documented definition entries counted above.
 
 | Macro | Current expansion intent / limitation |
 |---|---|
@@ -3528,6 +5281,9 @@ Each linked application has its own setup, main loop, and any required interrupt
 | [Button FND counter](../lab/LAB_GPIO_7segment_pb2.c) | The current `% 60` expression counts button presses from 0 to 59; the source description still says 0 to 19. |
 | [EXTI/SysTick counter](../lab/LAB_EXTI.c) | Counts automatically; PA4 toggles pause/resume and PD2 resets and resumes counting. |
 | [Stepper motor](../lab/LAB_Stepper_Motor.c) | Requests full-step clockwise/counterclockwise moves at 14 RPM with pauses; PC13 requests cancellation of the current move. |
+| [USART test run](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/tutorial/TU_USART_testrun.c) | The current source initializes USART1 at 9600 and sends `Hi_BT\\r\\n` every two seconds; it is not the USART2 line-number program described by that report section's prose. |
+| [Wired USART LED control](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/lab/LAB_USART_LED.c) | USART2 echoes/forwards local bytes to USART1. USART1 assembles a received line; Enter completes it, and main processes exact H/L messages for PA5. Bytes arriving while a prior line is pending can be dropped. |
+| [Bluetooth LED/stepper control](https://github.com/moonbib/EC-STM32F4-22200264/blob/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/lab/LAB_USART_Bluetooth.c) | Calls `receive_irq()` from both RX handlers and `UART_control_task()` from main. The report records H/L/J/K/P operation; the current task definition is commented out, so that application cannot be treated as build-ready with this library snapshot. |
 | [Timer interrupt tutorial](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/tutorial/TU_TIM_Interrupt.c) | TIM2 requests nominal 1 ms interrupts; `_count > 1000` toggles LD2 on interrupt 1001, giving nominal 1.001 s toggles and a 2.002 s full ON/OFF cycle after timer settings take effect. |
 | [PWM tutorial](https://github.com/moonbib/EC-STM32F4-22200264/blob/0d7f9f11ce09d7654f47e4f161cb854802165ce6/tutorial/TU_TIM_PWM.c) | PA5/TIM2_CH1 uses a 10 ms period (100 Hz). `i < 5` cycles 0%, 20%, 40%, 60%, and 80% at one-second holds; it does not reach 100%. The initial 20% setup is replaced by 0% on the first loop iteration. |
 
@@ -3535,10 +5291,12 @@ The applications illustrate how the library is called; their presence is not a c
 
 ## Verification and Maintenance
 
-- The original inventory was checked against active definitions at the original baseline, excluding comments. The Timer/PWM addition separately covers every active definition in the two reviewed `.c` files: 13 Timer and 8 PWM functions. Other newer modules and LAB setup wrappers were not included in this scoped update.
+- The original inventory was checked against active definitions at the original baseline, excluding comments. The Timer/PWM addition separately covers every active definition in the two reviewed `.c` files: 13 Timer and 8 PWM functions. USART was reviewed separately on 2026-11-01 as documented above; other LAB setup wrappers remain outside that update.
 - Implementation excerpts were compared against the corresponding source functions, allowing whitespace normalization only. New Timer/PWM excerpts are copied directly from the reviewed GitHub source; the report's formatting/comment differences do not replace those source excerpts.
-- All 64 documented definitions have purpose, implementation, parameter/return, and example sections. This statement applies to this README's scoped inventory, not every function currently present in the repository. The empty HSE body is explicitly identified as a stub.
+- All 92 documented definition entries have purpose, implementation, parameter/return, and example sections, including visibility/toolchain restrictions where applicable. The report-only UART_control_task entry is explicitly unavailable rather than counted as compiled code. This scoped inventory is not a claim that every function subsequently added to the repository is documented. The empty HSE body remains identified as a stub.
 - The final 22-page PreLAB report's 21 Timer/PWM function bodies were compared with the reviewed GitHub implementations, ignoring comments, whitespace, and redundant parentheses; the function contents matched. The README excerpts themselves preserve the GitHub function text.
+- The USART report was checked against current source: ordinary formatting/optional-brace/equivalent arithmetic differences were distinguished from the changed controller startup text, commented-out report task, active exam task, and mismatched test-run prose. No firmware was restored as part of this comparison.
+- USART source/declaration links, static/runtime visibility, and ordering were checked; USART precedes Timer/PWM in both index and body.
 - Source-link paths, function anchors, and code-block fence pairing were checked. These documentation checks do not replace compiler or hardware tests.
 - No firmware file, pin assignment, clock configuration, or interrupt behavior was changed by this documentation update. No board upload or new hardware measurement was performed.
 - When adding a course module or modifying an API, update its reference entry, the index, and the documented source baseline together. Locally present files not yet committed to this repository are outside this snapshot's inventory.
@@ -3546,12 +5304,14 @@ The applications illustrate how the library is called; their presence is not a c
 
 ## References
 
+- [Reviewed USART source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/cde23f64d839e655de19d9dbd5fa3624c3d2b3dd/include): baseline for USART APIs, runtime hooks, controller helpers, and the LAB_USART_init wrapper added on 2026-11-01.
+- [LAB: USART, LED, and Bluetooth](https://ykkim.gitbook.io/ec/ec-course/lab/lab-usart-led-bluetooth): course wired-serial and Bluetooth applications.
 - [Reviewed Timer/PWM source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/0d7f9f11ce09d7654f47e4f161cb854802165ce6/include): baseline for the 21 Timer/PWM function entries added on 2026-11-01.
 - [PreLAB: Timer Interrupt & PWM](https://ykkim.gitbook.io/ec/ec-course/lab/prelab-timer-interrupt-and-pwm): Timer and PWM library exercises and application demonstrations.
 - [Original reviewed course source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/b94fc559ceaaea1df8729b2d61367fe464374dae/include): source baseline for the original full-library inventory and sections other than Stepper and EXTI.
 - [Reviewed Stepper source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/f1a3b0ec64acf79dc61563e7dc46ad1421306e72/include): source baseline for the Stepper section updated on 2026-10-29.
 - [Reviewed EXTI source tree](https://github.com/moonbib/EC-STM32F4-22200264/tree/eeb4990ee889093dd58dffb7905922460a4e7403/include): source baseline for the EXTI section updated on 2026-10-29.
-- [STM32F411 reference manual, RM0383](https://www.st.com/resource/en/reference_manual/dm00119316.pdf): GPIO encodings, clock control, EXTI acknowledgement, timer update events, and PWM register behavior.
+- [STM32F411 reference manual, RM0383](https://www.st.com/resource/en/reference_manual/dm00119316.pdf): GPIO encodings, clock control, EXTI acknowledgement, timer update events, PWM register behavior, and USART baud/flag behavior.
 - [Arm CMSIS NVIC documentation](https://arm-software.github.io/CMSIS_5/Core/html/group__NVIC__gr.html): distinction between external IRQ enabling and processor exceptions.
 
 Original course-library attribution is retained in the linked source files and implementation excerpts where present.
