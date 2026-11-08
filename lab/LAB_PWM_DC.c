@@ -48,7 +48,7 @@ void setup(void){
     GPIO_pupd(IR_PIN, EC_PU);    
     
     __disable_irq();
-    EXTI_init(IR_PIN, BOTH, 1);
+    EXTI_init(IR_PIN, BOTH, 0);
     present_IR = (GPIO_read(IR_PIN) == LOW);
     __enable_irq();
 
