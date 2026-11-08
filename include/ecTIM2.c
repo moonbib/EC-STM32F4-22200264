@@ -61,9 +61,12 @@ void TIM_UI_disable(TIM_TypeDef* TIMx){
 	TIMx->DIER &= ~(TIM_DIER_UIE);					
 }
 
+//read flag, check update
 uint32_t is_UIF(TIM_TypeDef *TIMx){
 	return TIMx->SR & TIM_SR_UIF;
 }
+
+//clear event flag 
 void clear_UIF(TIM_TypeDef *TIMx){
 	TIMx->SR &= ~TIM_SR_UIF;
 }
@@ -170,7 +173,7 @@ void TIM_period_us(TIM_TypeDef* TIMx, uint32_t usec){
 
 
 
-
+//provide clock -> timer 
 void TIM_clock_enable(TIM_TypeDef* TIMx){ 
 	if(TIMx ==TIM1) RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
 	else if(TIMx ==TIM2) RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
@@ -183,7 +186,7 @@ void TIM_clock_enable(TIM_TypeDef* TIMx){
 }
 
 
-
+//return Interrupt number
 uint32_t get_TIM_IRQn(TIM_TypeDef* TIMx){
 	uint32_t IRQn_reg = 0x00000000;
 	if(TIMx == TIM1)       IRQn_reg = TIM1_UP_TIM10_IRQn;

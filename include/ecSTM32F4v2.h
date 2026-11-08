@@ -20,6 +20,7 @@ Description      : STM42F411 library
 #include "ecTIM2.h"
 #include "ecPWM2.h"
 #include "ecStepper2.h"
+#include "ecICAP2.h"
 //#include "ecADC2.h"
 #include "ecUART2.h"
 
