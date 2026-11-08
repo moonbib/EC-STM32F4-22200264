@@ -10,6 +10,7 @@ Description      : STM42F411 library
 #include "stm32f4xx.h"
 #include "stm32f411xe.h"
 #include "math.h"
+#include <stdio.h>
 
 // EC course Library
 #include "ecPinNames.h"
@@ -21,7 +22,7 @@ Description      : STM42F411 library
 #include "ecPWM2.h"
 #include "ecStepper2.h"
 #include "ecICAP2.h"
-//#include "ecADC2.h"
+#include "ecADC2.h"
 #include "ecUART2.h"
 
 

@@ -1,3 +1,9 @@
+/*----------------------------------------------------------------\
+Author           : [Jueon Moon]
+Modified         : 11-08-2026
+Description      : [PWM clock using RC motor] 
+/----------------------------------------------------------------*/
+
 #include "ecSTM32F4v2.h"
 // #include "ecRCC2.h"
 // #include "ecGPIO2.h"
@@ -19,7 +25,6 @@ void setup(void){
     //PA_1: TIM2_ch2, PWM period=20ms
     PWM_init(TIM2_CH2,20);   
     PWM_duty(TIM2_CH2, 0.5f/20.0f);
-    PWM_pulsewidth(TIM2_CH2,500);
     // PC_13: external button connected between and GND
     GPIO_init(BUTTON_PIN, INPUT);
     GPIO_pupd(BUTTON_PIN, EC_PU);
@@ -47,4 +52,13 @@ void TIM3_IRQHandler(void){
         float pulse_ms = 0.5f + (2.0f * angle / 180.0f);
         PWM_duty(TIM2_CH2, pulse_ms / 20.0f);
     }
+}
+
+void EXTI15_10_IRQHandler(void){
+    if(is_pending_EXTI(BUTTON_PIN)){
+        angle = 0;
+        PWM_duty(TIM2_CH2,0.5f/20.0f);
+        clear_pending_EXTI(BUTTON_PIN);
+    }
+
 }
