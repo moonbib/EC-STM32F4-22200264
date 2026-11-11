@@ -30,7 +30,7 @@ Description      : Tutorial - Timer Input Capture example 2
 #define PWM_PIN     PA_6        // TIM3_CH1 : test signal (jumper PA_6 -> PB_6)
 
 uint32_t pwm_period_ms=50;
-uint32_t uTick=100;
+uint32_t uTick=10;
 uint32_t timer_arr  = 65536;    // ticks per counter wrap (ARR+1)
 
 volatile uint32_t ovf_cnt = 0;      //counts overflows
@@ -80,7 +80,7 @@ void TIM4_IRQHandler(void){
     }
 
     // Rising edge captured on IC1
-    if(is_CCIF(TIM4, IC_1)){                    // IC1 : rising edge, SAME pin (TI1)
+    if(is_CCIF(TIM4, IC_1)){                 // IC1 : rising edge, SAME pin (TI1)
         cap_prev = ICAP_read(ICAP_PIN, IC_1);
         clear_CCIF(TIM4,IC_1);                                
     }

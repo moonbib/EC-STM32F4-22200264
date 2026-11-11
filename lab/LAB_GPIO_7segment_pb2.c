@@ -4,7 +4,6 @@
 	Description      : [ Displays '0' to '19' on a two-digit 7-segment FND ] 
 	/----------------------------------------------------------------*/
 
-
 #include "ecSTM32F4v2.h"
 // #include "ecGPIO2.h"
 // #include "ecRCC2.h"
