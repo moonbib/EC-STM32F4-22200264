@@ -19,7 +19,7 @@ Description      : [Timer Input Capture]
 #define ICAP_PIN    PB_6    // TIM4_CH1 : capture input
 
 uint32_t pwm_period_ms=50;
-uint32_t uTick=100;
+uint32_t uTick=10;
 uint32_t timer_arr  = 65536;    // ticks per counter wrap (ARR+1)
 
 static volatile uint32_t echoTicks = 0;
@@ -57,7 +57,12 @@ int main(void){
         if(ticks > 0) {
             echo_us = (float)ticks * uTick;
             distance_cm = echo_us * 0.017f;
-            printf("%.2f cm\r\n", distance_cm);
+            // printf("Distance = %.2f [cm]\r\n", distance_cm);
+            printf("ticks=%lu, uTick=%lu us, PSC=%lu, distance=%.2f cm\r\n",
+       (unsigned long)ticks,
+       (unsigned long)uTick,
+       (unsigned long)TIM4->PSC,
+       distance_cm);
 
         }
         delay_ms(500);
