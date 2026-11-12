@@ -18,8 +18,6 @@ Description      : I2C Library. i2c-LCD display control included
 // ========================================================
 // Internal helpers
 // ========================================================
-// 우림이는 바보다
-// 명금준은 바보다 
 // PCLK1 = HCLK / PPRE1. Both RCC_PLL_init() and RCC_HSI_init() leave the AHB
 // prescaler at /1, so HCLK == EC_SYSCLK.
 // RM0383 RCC_CFGR PPRE1 : 0xx = /1, 100 = /2, 101 = /4, 110 = /8, 111 = /16
