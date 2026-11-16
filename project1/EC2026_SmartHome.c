@@ -1,37 +1,43 @@
 /*----------------------------------------------------------------\
-Author           : [Yejun, Jueon]
+Author           : [Yejun, Jueon] 
 Modified         : 11-12-2026
 Description      : [smarthome device woth embedded system, looks like futher home, 
                     automatic work] 
 /----------------------------------------------------------------*/
 
 #include "ecSTM32F4v2.h"
-// #include "ecPinNames.h"
-// #include "ecRCC2.h"
-// #include "ecGPIO2.h"
-// #include "ecEXTI2.h"
-// #include "ecSysTick2.h"
-// #include "ecTIM2.h"
-// #include "ecPWM2.h"
-// #include "ecStepper2.h"
-// #include "ecICAP2.h"
-// #include "ecADC2.h"
-// #include "ecUART2.h"
 #include "ecI2C2.h"
 
 /*---------------------------------------
                 define
 -----------------------------------------*/
-#define VENT_PIN PB_7 // TIM4_CH2, 1ms
-#define SERVO_PIN PC_7 // TIM3_CH2, 20ms
-#define RGB_RED PB_13 
-#define RGB_GREEN PB_14
-#define RGB_BLUE PB_15
-#define LIGHT_SENSOR PA_0
-#define POTENTIO PC_1
-#define DHT11 PA_6
-#define PIN_BUTTON PA_10
-#define PIR PB_3
+#define VENTILATION_PIN     PB_7 // TIM4_CH2, 1ms
+#define PWM_PIN_VENTILATION 
+
+#define SERVO_PIN           PC_7 // TIM3_CH2, 20ms
+#define PWM_PIN_SERVO            
+
+#define RGB_RED             PB_13 
+#define RGB_GREEN           PB_14
+#define RGB_BLUE            PB_15
+
+#define LIGHT_SENSOR        PA_0
+#define POTENTIO            PC_1
+#define DHT11               PA_6
+#define PIN_BUTTON          PA_10
+#define PIR                 PB_3
+
+// VENTILATION_STANDARD
+#define HUMIDITY_STANDARD    100000
+#define TEMPERATURE_STANDARD 1000000
+
+// Servo Motor Configuration
+#define SERVO_MIN     0
+#define SERVO_MAX     180
+#define SERVO_STEP    10
+#define PULSE_MIN_US  500
+#define PULSE_MAX_US  2500
+
 
 // 낮,밤, 습도 등 상태가 금방금방 바뀌어서 값들을 define에 넣고 변경하는 것이 좋다!  
 /*------------------------------------------------------
@@ -68,17 +74,20 @@ uint32_t lcd_count = 0;
 
 void setup(void){
     RCC_PLL_init();     
-    SysTick_init(); 
-    //PIR
+    SysTick_init();
+
+    // PIR: Motion sensor
     EXTI_init(PIR,RISE,10);  //필요시 prioty 조절하기! 
+    
     // LCD
     I2C1_init(); // SCL = PB_8, SDA = PB_9 
-    //button 
+
+    // PIN_BUTTON 
     GPIO_init(PIN_BUTTON, INPUT);
     GPIO_pupd(PIN_BUTTON, PULL_UP);
     EXTI_init(PIN_BUTTON, FALL, 9);
 
-    //RGB pin 
+    // RGB pin 
     GPIO_init(RGB_RED,OUTPUT);
     GPIO_init(RGB_GREEN,OUTPUT);
     GPIO_init(RGB_BLUE,OUTPUT);
@@ -92,8 +101,11 @@ void setup(void){
 
     TIM_UI_init(TIM1, 250);
 
+    // Servo motor Initialization
+    PWM_init();
+    Servo_setAngle(0);
+    
 }
-
 
 int main(void) {
     setup();
@@ -103,6 +115,9 @@ int main(void) {
     MState previousMode = MODE_HOME;
     uint32_t displayStartTick = 0;
     uint32_t awayStartTick = 0;
+    uint32_t awaySeconds = 5;
+    uint32_t previousAwaySeconds = 6;
+    char awayLine[17];
     char lcdLine[17];
     char terminalMsg[64];
 
@@ -152,7 +167,6 @@ int main(void) {
             break; 
             //+home entrance
 
-
         case SCREEN_VENT:
             firstLine = "HOME, VENT";
             lcdSecondLine = "T:--C H:--% VENT";
@@ -162,8 +176,11 @@ int main(void) {
             break;
 
         case SCREEN_AWAY:
-            // TODO: Start a 5-second countdown on entry to AWAY.
-            firstLine = "Away, -- sec";
+            awaySeconds = (now - awayStartTick) / 4U;
+            awaySeconds = awaySeconds < 5U ? 5U - awaySeconds : 0U;
+            snprintf(awayLine, sizeof(awayLine), "Away, %lu sec",
+                     (unsigned long)awaySeconds);
+            firstLine = awayLine;
             lcdSecondLine = "";
             terminalSecondLine = "";
             //R blink at 0.5sec + countdown
@@ -187,7 +204,8 @@ int main(void) {
         GPIO_write(RGB_GREEN, green);
         GPIO_write(RGB_BLUE, blue);
 
-        if (display == previousScreen) {
+        if (display == previousScreen &&
+            (display != SCREEN_AWAY || awaySeconds == previousAwaySeconds)) {
             continue;
         }
 
@@ -211,6 +229,7 @@ int main(void) {
         }
 
         previousScreen = display;
+        previousAwaySeconds = awaySeconds;
     }
 }
 
@@ -232,8 +251,8 @@ void EXTI15_10_IRQHandler(void)
 }
 
 // PIR motion detect interrupt = alarm
-void EXTI3_IRQHandler(void) {
-	if (is_pending_EXTI(PIR)) { 
+void EXTI3_IRQHandler(void) {   
+	if (is_pending_EXTI(PIR)) {      
         // TODO: In HOME, handle entrance lighting.
         // TODO: In AWAY, set alarmActive after the exit countdown has ended.
 			clear_pending_EXTI(PIR);
@@ -265,8 +284,7 @@ void USART2_IRQHandler(void)
 }
 
 // Bluetooth handler
-void USART6_IRQHandler(void)
-{
+void USART6_IRQHandler(void) {
     if (is_USART_RXNE(USART6)) {
         uint8_t key = USART_read(USART6);
         if (key == 'C' || key == 'c') {
@@ -283,7 +301,9 @@ void USART6_IRQHandler(void)
 }
 
 void TIM4_IRQHandler(void){
-
+    if(is_UIF(TIM4)){
+        clear_UIF(TIM4);    
+    }
 }
 
 //TIMER_interrupt
@@ -292,4 +312,23 @@ void TIM1_UP_TIM10_IRQHandler(void){
         clear_UIF(TIM1);
         controlTicks++;
     }
+}
+
+// Set Servo Angle (0 ~ 180 deg)
+void Servo_setAngle(int angle){
+
+    // Limit Angle Range
+    if(angle < SERVO_MIN){
+        angle = SERVO_MIN;
+    }
+    if(angle > SERVO_MAX){
+        angle = SERVO_MAX;
+    }
+
+    // Convert Angle to Pulse Width (us)
+    uint32_t pulse_width =
+        PULSE_MIN_US + (uint32_t)(angle * (PULSE_MAX_US - PULSE_MIN_US) / SERVO_MAX);
+
+    // Update PWM Pulse Width
+    PWM_pulsewidth_us(PWM_PIN, pulse_width);
 }
