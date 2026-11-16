@@ -1,5 +1,5 @@
-//#include "ecSTM32F4v2.h"
-#include "ecSTM32_simple.h"
+#include "ecSTM32F4v2.h"
+//#include "ecSTM32_simple.h"
 #define LED_PIN PA_5
 #define BUTTON_PIN PC_13
 
