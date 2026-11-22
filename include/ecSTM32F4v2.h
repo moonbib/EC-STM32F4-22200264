@@ -24,6 +24,8 @@ Description      : STM42F411 library
 #include "ecICAP2.h"
 #include "ecADC2.h"
 #include "ecUART2.h"
+#include "ecDHT11.h"
+#include "ecI2C2.h"
 
 
 //공용으로 사용하겠다 싶은 이름들 선언!
